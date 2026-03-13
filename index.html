@@ -1,0 +1,3016 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>InspectPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  /* Industrial Green Palette */
+  --g1: #0d1f0d;
+  --g2: #152615;
+  --g3: #1e361e;
+  --g4: #2a4d2a;
+  --g5: #366636;
+  --g6: #4a8c4a;
+  --g7: #62b062;
+  --g8: #88cc88;
+  --g9: #b8e4b8;
+  --g10:#e4f5e4;
+
+  /* Neutrals */
+  --n1: #080d08;
+  --n2: #111511;
+  --n3: #1a201a;
+  --n4: #242b24;
+  --n5: #2e362e;
+  --n6: #3d473d;
+  --n7: #566056;
+  --n8: #7a867a;
+  --n9: #a8b2a8;
+  --n10:#d4dbd4;
+  --n11:#edf2ed;
+  --white:#f8fbf8;
+
+  /* Status */
+  --ok-bg: rgba(98,176,98,.15); --ok-c:#4a8c4a;
+  --warn-bg: rgba(194,148,44,.15); --warn-c:#c29428;
+  --nok-bg: rgba(192,68,68,.15); --nok-c:#c04444;
+
+  /* Radii */
+  --r1:3px; --r2:6px; --r3:10px; --r4:16px; --r5:24px;
+
+  /* Shadows */
+  --s1: 0 1px 3px rgba(0,0,0,.2);
+  --s2: 0 3px 10px rgba(0,0,0,.25);
+  --s3: 0 8px 24px rgba(0,0,0,.3);
+
+  /* Transitions */
+  --t1: .15s cubic-bezier(.4,0,.2,1);
+  --t2: .25s cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="dark"] {
+  --bg:    var(--n2);
+  --bg2:   var(--n3);
+  --bg3:   var(--n4);
+  --bg4:   var(--n5);
+  --line:  var(--n5);
+  --line2: var(--n6);
+  --tx1:   var(--n11);
+  --tx2:   var(--n9);
+  --tx3:   var(--n8);
+  --acc:   var(--g7);
+  --acc2:  var(--g6);
+  --acc-bg:rgba(98,176,98,.1);
+  --acc-ln:rgba(98,176,98,.25);
+  --card:  var(--n3);
+  --inp:   var(--n4);
+  --top-bg:rgba(17,21,17,.92);
+}
+[data-theme="light"] {
+  --bg:    #ffffff;
+  --bg2:   #ffffff;
+  --bg3:   #f4f4f4;
+  --bg4:   #ebebeb;
+  --line:  #e8e8e8;
+  --line2: #d8d8d8;
+  --tx1:   #1a201a;
+  --tx2:   #4a4a4a;
+  --tx3:   #888888;
+  --acc:   var(--g5);
+  --acc2:  var(--g4);
+  --acc-bg:rgba(54,102,54,.08);
+  --acc-ln:rgba(54,102,54,.3);
+  --card:  #ffffff;
+  --inp:   #ffffff;
+  --top-bg:rgba(255,255,255,.95);
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html { font-size:16px; scroll-behavior:smooth; }
+body {
+  font-family:'Barlow',sans-serif;
+  background:var(--bg);
+  color:var(--tx1);
+  min-height:100vh;
+  transition:background var(--t2),color var(--t2);
+  overflow-x:hidden;
+}
+
+/* TYPOGRAPHY SYSTEM */
+.t-display {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  line-height:.95;
+  letter-spacing:-.01em;
+}
+.t-heading {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  line-height:1.1;
+}
+.t-label {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-size:.7rem;
+}
+.t-mono {
+  font-family:'JetBrains Mono',monospace;
+  font-weight:500;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+.shell { display:flex; flex-direction:column; min-height:100vh; }
+
+/* TOPBAR */
+.topbar {
+  position:sticky; top:0; z-index:200;
+  height:60px;
+  background:var(--top-bg);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  display:flex; align-items:center;
+  padding:0 20px; gap:12px;
+}
+.logo {
+  display:flex; align-items:center; gap:10px;
+  text-decoration:none; flex:1;
+  cursor:pointer;
+}
+.logo-mark {
+  width:34px; height:34px;
+  background:var(--acc);
+  border-radius:var(--r2);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.logo-text {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  font-size:1.25rem;
+  letter-spacing:.02em;
+  color:var(--tx1);
+  line-height:1;
+}
+.logo-text span { color:var(--acc); }
+.logo-version {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.6rem;
+  color:var(--tx3);
+  background:var(--bg3);
+  padding:1px 5px;
+  border-radius:var(--r1);
+  letter-spacing:.04em;
+}
+
+.topbar-center {
+  display:none;
+  gap:2px;
+}
+@media(min-width:768px){
+  .topbar-center { display:flex; }
+  .bottom-nav { display:none !important; }
+  .main-wrap { padding-bottom:24px !important; }
+}
+.nav-pill {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:600;
+  font-size:.85rem;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border-radius:var(--r2);
+  border:none; background:none;
+  color:var(--tx2);
+  cursor:pointer;
+  transition:all var(--t1);
+}
+.nav-pill:hover { background:var(--bg3); color:var(--tx1); }
+.nav-pill.active { background:var(--acc-bg); color:var(--acc); }
+
+.topbar-right { display:flex; gap:6px; align-items:center; }
+.lang-btn {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem; font-weight:500;
+  background:var(--bg3);
+  border:1px solid var(--line2);
+  border-radius:var(--r1);
+  color:var(--tx2);
+  padding:5px 8px;
+  cursor:pointer;
+  transition:all var(--t1);
+  letter-spacing:.06em;
+}
+.lang-btn:hover { border-color:var(--acc); color:var(--acc); }
+.icon-btn {
+  width:36px; height:36px;
+  background:none; border:none;
+  border-radius:var(--r2);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--tx2); cursor:pointer;
+  transition:all var(--t1);
+}
+.icon-btn:hover { background:var(--bg3); color:var(--tx1); }
+
+/* MAIN */
+.main-wrap {
+  flex:1;
+  padding:24px 16px 80px;
+  max-width:900px;
+  margin:0 auto;
+  width:100%;
+}
+@media(min-width:768px){ .main-wrap { padding:28px 28px 40px; } }
+
+/* SCREENS */
+.screen { display:none; }
+.screen.active {
+  display:block;
+  animation:slideUp .22s ease;
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ═══════════════════════════════════════════════
+   PAGE HEADERS
+═══════════════════════════════════════════════ */
+.page-header {
+  margin-bottom:28px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:18px;
+}
+.page-header-kicker {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.65rem;
+  color:var(--acc);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.page-header h1 {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  font-size:clamp(1.8rem,5vw,2.6rem);
+  line-height:.95;
+  color:var(--tx1);
+  letter-spacing:-.01em;
+}
+.page-header p {
+  font-size:.9rem;
+  color:var(--tx2);
+  margin-top:6px;
+  font-weight:300;
+  line-height:1.5;
+}
+
+/* BACK HEADER */
+.back-header {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:24px;
+}
+.back-header h1 {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  font-size:clamp(1.4rem,4vw,2rem);
+  letter-spacing:-.01em;
+}
+
+/* ═══════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════ */
+.stats-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:24px;
+}
+@media(max-width:520px){ .stats-grid { grid-template-columns:repeat(2,1fr); } }
+.stat-card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r3);
+  padding:14px 12px;
+  box-shadow:var(--s1);
+  position:relative;
+  overflow:hidden;
+}
+.stat-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:2px;
+  background:var(--acc);
+  opacity:.4;
+}
+.stat-num {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  font-size:2rem;
+  line-height:1;
+  color:var(--acc);
+}
+.stat-num.nok { color:var(--nok-c); }
+.stat-num.warn { color:var(--warn-c); }
+.stat-num.gray { color:var(--tx3); }
+.stat-lbl {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.68rem;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--tx3);
+  margin-top:2px;
+}
+
+/* ═══════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════ */
+.btn {
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.95rem;
+  letter-spacing:.04em; text-transform:uppercase;
+  border:none; border-radius:var(--r2);
+  padding:10px 18px; cursor:pointer;
+  transition:all var(--t1);
+  white-space:nowrap;
+}
+.btn-primary {
+  background:var(--acc);
+  color:#fff;
+  box-shadow:0 2px 8px rgba(98,176,98,.3);
+}
+.btn-primary:hover { background:var(--acc2); transform:translateY(-1px); box-shadow:0 4px 12px rgba(98,176,98,.4); }
+.btn-primary:active { transform:none; }
+.btn-secondary {
+  background:var(--bg3);
+  color:var(--tx1);
+  border:1px solid var(--line2);
+}
+.btn-secondary:hover { background:var(--bg4); border-color:var(--acc-ln); }
+.btn-danger-outline {
+  background:none; color:var(--nok-c);
+  border:1px solid var(--nok-c);
+  opacity:.7;
+}
+.btn-danger-outline:hover { opacity:1; background:var(--nok-bg); }
+.btn-full { width:100%; justify-content:center; }
+.btn-sm { padding:7px 12px; font-size:.8rem; }
+.btn-xs { padding:4px 8px; font-size:.72rem; }
+
+.add-row-btn {
+  width:100%; background:none;
+  border:1px dashed var(--line2);
+  border-radius:var(--r2);
+  color:var(--tx3);
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:600; font-size:.85rem;
+  text-transform:uppercase; letter-spacing:.05em;
+  padding:9px; cursor:pointer;
+  transition:all var(--t1); margin-top:8px;
+}
+.add-row-btn:hover { border-color:var(--acc); color:var(--acc); background:var(--acc-bg); }
+
+/* ═══════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════ */
+.card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r3);
+  padding:18px;
+  box-shadow:var(--s1);
+  margin-bottom:12px;
+}
+.card-title {
+  display:flex; align-items:center; gap:8px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:1.05rem;
+  letter-spacing:.02em;
+  color:var(--acc);
+  margin-bottom:16px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--acc-ln);
+}
+.card-title svg { flex-shrink:0; }
+
+/* ═══════════════════════════════════════════════
+   INSPECTION LIST CARDS
+═══════════════════════════════════════════════ */
+.insp-card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r3);
+  padding:14px 16px;
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer;
+  transition:all var(--t1);
+  box-shadow:var(--s1);
+  position:relative;
+}
+.insp-card:hover {
+  border-color:var(--acc-ln);
+  transform:translateX(3px);
+  box-shadow:var(--s2);
+}
+.insp-card-accent {
+  width:3px; height:100%;
+  position:absolute; left:0; top:0;
+  border-radius:var(--r1) 0 0 var(--r1);
+  background:var(--acc);
+  opacity:.5;
+}
+.insp-card:hover .insp-card-accent { opacity:1; }
+.insp-icon {
+  width:42px; height:42px;
+  border-radius:var(--r2);
+  background:var(--acc-bg);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--acc); flex-shrink:0;
+}
+.insp-info { flex:1; min-width:0; }
+.insp-tag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem; color:var(--tx3);
+}
+.insp-name {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:1.05rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.insp-meta { font-size:.75rem; color:var(--tx3); margin-top:1px; }
+.insp-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+
+/* STATUS BADGES */
+.badge {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.72rem;
+  letter-spacing:.07em; text-transform:uppercase;
+  padding:3px 10px; border-radius:20px;
+  white-space:nowrap;
+}
+.badge-ok    { background:var(--ok-bg); color:var(--ok-c); }
+.badge-warn  { background:var(--warn-bg); color:var(--warn-c); }
+.badge-nok   { background:var(--nok-bg); color:var(--nok-c); }
+.badge-draft { background:var(--bg3); color:var(--tx3); border:1px solid var(--line2); }
+
+/* ═══════════════════════════════════════════════
+   SECTION LABELS
+═══════════════════════════════════════════════ */
+.section-sep {
+  display:flex; align-items:center; gap:10px;
+  margin:22px 0 12px;
+}
+.section-sep-label {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.72rem;
+  text-transform:uppercase; letter-spacing:.1em;
+  color:var(--tx3); white-space:nowrap;
+}
+.section-sep::before,.section-sep::after {
+  content:''; flex:1; height:1px; background:var(--line);
+}
+.section-sep::before { display:none; }
+
+/* ═══════════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════════ */
+.form-grid { display:grid; gap:12px; }
+.form-grid-2 { grid-template-columns:1fr 1fr; }
+.form-grid-3 { grid-template-columns:1fr 1fr 1fr; }
+@media(max-width:500px) {
+  .form-grid-2,.form-grid-3 { grid-template-columns:1fr; }
+}
+.form-field label {
+  display:block;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:600; font-size:.72rem;
+  text-transform:uppercase; letter-spacing:.07em;
+  color:var(--tx3); margin-bottom:5px;
+}
+input[type=text],input[type=number],input[type=date],input[type=email],
+input[type=tel],textarea,select {
+  width:100%;
+  background:var(--inp);
+  border:1px solid var(--line2);
+  border-radius:var(--r2);
+  padding:9px 11px;
+  font-size:.88rem;
+  color:var(--tx1);
+  font-family:'Barlow',sans-serif;
+  outline:none;
+  transition:border-color var(--t1), box-shadow var(--t1);
+}
+input:focus,textarea:focus,select:focus {
+  border-color:var(--acc);
+  box-shadow:0 0 0 3px var(--acc-bg);
+}
+textarea { resize:vertical; min-height:90px; line-height:1.6; }
+select {
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237a867a' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  padding-right:28px;
+  cursor:pointer;
+}
+
+/* ═══════════════════════════════════════════════
+   STEP PROGRESS
+═══════════════════════════════════════════════ */
+.step-header {
+  margin-bottom:20px;
+}
+.step-bar-wrap {
+  height:3px;
+  background:var(--bg3);
+  border-radius:2px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+.step-bar { height:100%; background:var(--acc); border-radius:2px; transition:width .4s ease; }
+.step-tabs {
+  display:flex; gap:0;
+  border:1px solid var(--line);
+  border-radius:var(--r2);
+  overflow:hidden;
+}
+.step-tab {
+  flex:1; background:none; border:none;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:600; font-size:.75rem;
+  text-transform:uppercase; letter-spacing:.05em;
+  color:var(--tx3); cursor:pointer;
+  padding:8px 4px;
+  transition:all var(--t1);
+  border-right:1px solid var(--line);
+  position:relative;
+}
+.step-tab:last-child { border-right:none; }
+.step-tab.active { background:var(--acc-bg); color:var(--acc); }
+.step-tab.done { color:var(--ok-c); }
+.step-tab.done::after {
+  content:'✓';
+  position:absolute; top:2px; right:3px;
+  font-size:.55rem; color:var(--ok-c);
+}
+.step-nav {
+  display:flex; justify-content:flex-end; gap:8px;
+  margin-top:16px; padding-top:14px;
+  border-top:1px solid var(--line);
+}
+
+/* ═══════════════════════════════════════════════
+   CHECKLIST
+═══════════════════════════════════════════════ */
+.cl-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:var(--r2);
+  margin-bottom:6px;
+  background:var(--bg2);
+  transition:all var(--t1);
+}
+.cl-item:hover { border-color:var(--line2); }
+.cl-label { flex:1; font-size:.88rem; line-height:1.4; }
+.cl-btns { display:flex; gap:4px; flex-shrink:0; }
+.cl-btn {
+  width:32px; height:32px;
+  border-radius:var(--r1);
+  border:1px solid var(--line2);
+  background:none; cursor:pointer;
+  font-size:.85rem; font-weight:700;
+  transition:all var(--t1);
+  display:flex; align-items:center; justify-content:center;
+}
+.cl-btn.ok.on  { background:var(--ok-bg); border-color:var(--ok-c); color:var(--ok-c); }
+.cl-btn.nok.on { background:var(--nok-bg); border-color:var(--nok-c); color:var(--nok-c); }
+.cl-btn.obs.on { background:var(--warn-bg); border-color:var(--warn-c); color:var(--warn-c); }
+.cl-btn:not(.on) { color:var(--tx3); }
+
+/* ═══════════════════════════════════════════════
+   COTAS TABLE
+═══════════════════════════════════════════════ */
+.cotas-wrap { overflow-x:auto; }
+.cotas-tbl {
+  width:100%; border-collapse:collapse;
+  min-width:520px;
+}
+.cotas-tbl th {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.7rem;
+  text-transform:uppercase; letter-spacing:.08em;
+  color:var(--tx3); padding:6px 8px;
+  border-bottom:2px solid var(--line);
+  text-align:left; white-space:nowrap;
+}
+.cotas-tbl td { padding:4px 4px; vertical-align:middle; }
+.cotas-tbl td:not(:last-child) { border-bottom:1px solid var(--line); }
+.cotas-tbl input { padding:6px 8px; font-size:.82rem; }
+.sem {
+  width:30px; height:30px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  margin:auto; font-size:.8rem; font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+}
+.sem-ok   { background:var(--ok-bg); color:var(--ok-c); }
+.sem-warn { background:var(--warn-bg); color:var(--warn-c); }
+.sem-nok  { background:var(--nok-bg); color:var(--nok-c); }
+.sem-nd   { background:var(--bg3); color:var(--tx3); }
+
+/* ═══════════════════════════════════════════════
+   PHOTOS
+═══════════════════════════════════════════════ */
+.photos-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:8px;
+}
+.photo-card {
+  border-radius:var(--r2);
+  overflow:hidden;
+  border:1px solid var(--line);
+  position:relative;
+  aspect-ratio:4/3;
+  background:var(--bg3);
+  cursor:pointer;
+  transition:all var(--t1);
+}
+.photo-card:hover { border-color:var(--acc-ln); transform:scale(1.02); }
+.photo-card img { width:100%; height:100%; object-fit:cover; display:block; }
+.photo-card .p-del {
+  position:absolute; top:4px; right:4px;
+  background:rgba(0,0,0,.65);
+  border:none; color:#fff;
+  border-radius:50%; width:22px; height:22px;
+  cursor:pointer; font-size:.7rem;
+  display:none; align-items:center; justify-content:center;
+  transition:all var(--t1);
+}
+.photo-card:hover .p-del { display:flex; }
+.photo-card .p-cap {
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.75));
+  padding:14px 5px 4px;
+  font-size:.62rem; color:#fff;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.photo-add {
+  border:2px dashed var(--line2);
+  border-radius:var(--r2);
+  aspect-ratio:4/3;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:5px; cursor:pointer; color:var(--tx3);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.78rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:.05em;
+  transition:all var(--t1); background:none;
+}
+.photo-add:hover { border-color:var(--acc); color:var(--acc); background:var(--acc-bg); }
+input[type=file] { display:none; }
+
+/* ═══════════════════════════════════════════════
+   STATUS SELECTOR
+═══════════════════════════════════════════════ */
+.status-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.status-opt {
+  border:2px solid var(--line2);
+  border-radius:var(--r3);
+  padding:14px 8px;
+  cursor:pointer; text-align:center;
+  background:none; color:var(--tx2);
+  transition:all var(--t1);
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.88rem;
+  text-transform:uppercase; letter-spacing:.04em;
+}
+.status-opt .so-icon { font-size:1.4rem; display:block; margin-bottom:4px; }
+.status-opt.ok.sel    { border-color:var(--ok-c); background:var(--ok-bg); color:var(--ok-c); }
+.status-opt.warn.sel  { border-color:var(--warn-c); background:var(--warn-bg); color:var(--warn-c); }
+.status-opt.nok.sel   { border-color:var(--nok-c); background:var(--nok-bg); color:var(--nok-c); }
+
+/* ═══════════════════════════════════════════════
+   SIGNATURE CANVAS
+═══════════════════════════════════════════════ */
+.sig-wrap {
+  border:1px solid var(--line2);
+  border-radius:var(--r2);
+  background:var(--inp);
+  overflow:hidden;
+  touch-action:none;
+  position:relative;
+}
+.sig-wrap canvas { display:block; width:100%; touch-action:none; cursor:crosshair; }
+.sig-hint {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.85rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:.1em;
+  color:var(--tx3); opacity:.5;
+}
+
+/* ═══════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════ */
+.overlay {
+  position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,.8);
+  display:none; align-items:center; justify-content:center;
+  padding:16px;
+  backdrop-filter:blur(4px);
+}
+.overlay.open { display:flex; animation:fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal {
+  background:var(--bg2);
+  border:1px solid var(--line2);
+  border-radius:var(--r4);
+  max-width:700px; width:100%;
+  padding:22px;
+  max-height:90vh; overflow-y:auto;
+  box-shadow:var(--s3);
+}
+.modal-hd {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px;
+}
+.modal-hd h3 {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800; font-size:1.2rem;
+  letter-spacing:.02em;
+}
+.canvas-box {
+  border:1px solid var(--line2);
+  border-radius:var(--r2);
+  overflow:hidden;
+  position:relative;
+}
+.canvas-box canvas { display:block; width:100%; cursor:crosshair; touch-action:none; }
+.draw-toolbar {
+  display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap; align-items:center;
+}
+.dt-btn {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.72rem;
+  text-transform:uppercase; letter-spacing:.05em;
+  padding:6px 10px;
+  border-radius:var(--r1);
+  border:1px solid var(--line2);
+  background:var(--bg3);
+  color:var(--tx2); cursor:pointer;
+  transition:all var(--t1);
+}
+.dt-btn:hover { border-color:var(--acc); color:var(--acc); }
+.dt-btn.on { background:var(--acc-bg); border-color:var(--acc); color:var(--acc); }
+.color-swatch {
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid transparent; cursor:pointer;
+  transition:border-color var(--t1); flex-shrink:0;
+}
+.color-swatch.on { border-color:var(--tx1); }
+
+/* ═══════════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════════ */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--top-bg);
+  border-top:1px solid var(--line);
+  display:flex; height:62px; z-index:100;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.bn-btn {
+  flex:1; background:none; border:none;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:4px; cursor:pointer;
+  color:var(--tx3);
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.62rem;
+  text-transform:uppercase; letter-spacing:.07em;
+  transition:all var(--t1); border-radius:0;
+}
+.bn-btn.active { color:var(--acc); }
+.bn-btn svg { transition:transform var(--t1); }
+.bn-btn.active svg { transform:scale(1.1); }
+
+/* ═══════════════════════════════════════════════
+   SETTINGS / PROFILE
+═══════════════════════════════════════════════ */
+.profile-pic-wrap {
+  display:flex; align-items:center; gap:20px;
+  padding:20px; background:var(--bg3);
+  border-radius:var(--r3); margin-bottom:16px;
+  border:1px solid var(--line);
+}
+/* Avatar container — the actual clipping circle */
+.profile-pic {
+  position:relative;
+  width:88px; height:88px;
+  border-radius:50%;
+  background:var(--acc-bg);
+  border:3px solid var(--acc-ln);
+  overflow:hidden;          /* ← this is what clips the photo */
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--acc);
+  transition:border-color var(--t1), box-shadow var(--t1);
+}
+.profile-pic:hover { border-color:var(--acc); box-shadow:0 0 0 4px var(--acc-bg); }
+/* Image inside MUST fill the circle */
+.profile-pic img {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  object-position:center;
+  border-radius:0;          /* parent already clips to circle */
+  display:block;
+}
+/* Camera overlay on hover */
+.profile-pic-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,.48);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; transition:opacity .2s;
+  cursor:pointer;
+  border-radius:50%;
+}
+.profile-pic:hover .profile-pic-overlay { opacity:1; }
+/* Badge ● edit icon */
+.profile-pic-badge {
+  position:absolute; bottom:2px; right:2px;
+  width:24px; height:24px; border-radius:50%;
+  background:var(--acc); border:2px solid var(--bg3);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; cursor:pointer;
+  transition:transform .15s;
+}
+.profile-pic-badge:hover { transform:scale(1.15); }
+/* Info / actions column */
+.profile-pic-info h3 {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800; font-size:1.15rem; margin-bottom:2px;
+}
+.profile-pic-info p { font-size:.8rem; color:var(--tx2); margin-top:2px; }
+.pic-actions { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+
+/* TOGGLE */
+.toggle-row {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 16px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r3);
+  margin-bottom:8px;
+}
+.toggle-row-info { flex:1; }
+.toggle-row-label {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.95rem;
+}
+.toggle-row-desc { font-size:.78rem; color:var(--tx3); margin-top:2px; }
+.sw { position:relative; width:46px; height:26px; flex-shrink:0; }
+.sw input { opacity:0; width:0; height:0; }
+.sw-sl {
+  position:absolute; inset:0;
+  background:var(--bg4); border-radius:13px;
+  cursor:pointer; transition:background var(--t1);
+}
+.sw-sl::before {
+  content:''; position:absolute;
+  width:20px; height:20px; left:3px; top:3px;
+  background:#fff; border-radius:50%;
+  transition:transform var(--t1);
+  box-shadow:var(--s1);
+}
+.sw input:checked + .sw-sl { background:var(--acc); }
+.sw input:checked + .sw-sl::before { transform:translateX(20px); }
+
+/* ═══════════════════════════════════════════════
+   REPORT PDF STYLES
+═══════════════════════════════════════════════ */
+.rpt {
+  font-family:'Barlow',sans-serif;
+  background:#fff; color:#1a1a1a;
+  padding:32px; font-size:11.5px;
+  line-height:1.5;
+}
+.rpt-header {
+  display:flex; align-items:flex-start;
+  justify-content:space-between;
+  padding-bottom:16px;
+  border-bottom:3px solid #366636;
+  margin-bottom:18px;
+}
+.rpt-logo-block {}
+.rpt-logo-name {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px; font-weight:800;
+  color:#366636; letter-spacing:.02em;
+}
+.rpt-company { font-size:10px; color:#666; margin-top:1px; }
+.rpt-inspector-block { text-align:right; }
+.rpt-insp-pic { width:52px; height:52px; border-radius:50%; object-fit:cover; margin-left:auto; margin-bottom:4px; display:block; border:2px solid #a0c8a0; }
+.rpt-insp-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; color:#1a1a1a; }
+.rpt-insp-meta { font-size:9.5px; color:#666; }
+.rpt-title-block {
+  background:#f3faf3;
+  border-left:4px solid #366636;
+  padding:12px 16px;
+  margin-bottom:16px;
+  border-radius:0 6px 6px 0;
+}
+.rpt-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px; font-weight:800;
+  color:#1a1a1a; letter-spacing:.02em;
+}
+.rpt-subtitle { font-size:10px; color:#666; font-family:'JetBrains Mono',monospace; }
+.rpt-sec-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800; font-size:11px;
+  text-transform:uppercase; letter-spacing:.1em;
+  color:#366636;
+  border-bottom:1.5px solid #c8ddc8;
+  padding-bottom:4px; margin-bottom:8px; margin-top:14px;
+}
+.rpt-tbl { width:100%; border-collapse:collapse; font-size:11px; }
+.rpt-tbl th {
+  background:#f3faf3;
+  padding:5px 8px; text-align:left;
+  font-weight:700; font-family:'Barlow Condensed',sans-serif;
+  letter-spacing:.05em; text-transform:uppercase;
+  border:1px solid #d0ddd0; font-size:9.5px;
+}
+.rpt-tbl td { padding:5px 8px; border:1px solid #e4ede4; }
+.rpt-tbl tr:nth-child(even) td { background:#f9fcf9; }
+.rpt-photos { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rpt-photo img { width:100%; border-radius:4px; border:1px solid #e0e8e0; }
+.rpt-photo-cap { font-size:9.5px; color:#777; margin-top:3px; font-style:italic; }
+.rpt-verdict {
+  display:flex; align-items:center; gap:12px;
+  background:#f9fcf9; border:1.5px solid #c8ddc8;
+  border-radius:6px; padding:12px 16px; margin-top:8px;
+}
+.rpt-verdict-badge {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800; font-size:13px;
+  padding:5px 14px; border-radius:20px;
+  text-transform:uppercase; letter-spacing:.06em;
+  white-space:nowrap;
+}
+.rpt-sig img { max-height:64px; border-bottom:1px solid #ccc; }
+.rpt-footer {
+  margin-top:20px; padding-top:10px;
+  border-top:1px solid #e4ede4;
+  font-size:9px; color:#aaa; text-align:center;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ═══════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════ */
+.empty {
+  text-align:center; padding:48px 24px;
+  color:var(--tx3);
+}
+.empty svg { opacity:.3; margin-bottom:12px; }
+.empty-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:1.1rem;
+  color:var(--tx2); margin-bottom:4px;
+}
+
+/* ═══════════════════════════════════════════════
+   FILTER CHIPS
+═══════════════════════════════════════════════ */
+.chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.chip {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.72rem;
+  text-transform:uppercase; letter-spacing:.07em;
+  padding:5px 12px; border-radius:20px;
+  border:1px solid var(--line2);
+  background:var(--bg3); color:var(--tx3);
+  cursor:pointer; transition:all var(--t1);
+}
+.chip.on { background:var(--acc-bg); border-color:var(--acc-ln); color:var(--acc); }
+
+/* REPORT LANG SELECTOR */
+.report-lang-sel {
+  display:flex; gap:8px; flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.rls-opt {
+  flex:1; min-width:120px;
+  border:2px solid var(--line2);
+  border-radius:var(--r2);
+  padding:10px; text-align:center;
+  cursor:pointer; background:none;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:.9rem;
+  text-transform:uppercase; letter-spacing:.05em;
+  color:var(--tx2); transition:all var(--t1);
+}
+.rls-opt.on { border-color:var(--acc); background:var(--acc-bg); color:var(--acc); }
+.rls-flag { font-size:1.4rem; display:block; margin-bottom:3px; }
+
+/* SHARE BUTTONS ROW */
+.share-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+
+/* ═══ FAB & TOOLS ═══ */
+.fab-sub {
+  width:44px; height:44px; border-radius:50%;
+  background:var(--card); border:2px solid var(--acc-ln);
+  color:var(--acc); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:var(--s2); transition:all var(--t1); flex-shrink:0;
+}
+.fab-sub:hover { background:var(--acc); color:#fff; border-color:var(--acc); transform:scale(1.08); }
+.fab-label {
+  background:var(--card); border:1px solid var(--line2);
+  border-radius:var(--r2); padding:5px 10px;
+  font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:.78rem; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--tx2); box-shadow:var(--s1); white-space:nowrap; pointer-events:none;
+}
+#fabMenu.open { opacity:1 !important; pointer-events:all !important; transform:none !important; }
+#fabMain.open { transform:rotate(45deg); box-shadow:0 4px 20px rgba(192,68,68,.4) !important; }
+.npt-row td { padding:7px 10px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; font-size:.78rem; }
+.npt-row:hover td { background:var(--acc-bg); }
+.npt-row td:first-child { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:.9rem; color:var(--tx1); }
+.npt-type-badge { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; padding:2px 7px; border-radius:10px; }
+@media(min-width:768px){ #fabWrap { bottom:24px !important; right:24px !important; } }
+</style>
+</head>
+<body data-theme="light">
+<div class="shell">
+
+<!-- ═══ TOPBAR ═══ -->
+<header class="topbar">
+  <div class="logo" onclick="nav('home')">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">Inspect<span>Pro</span></div>
+    </div>
+    <div class="logo-version">v2.0</div>
+  </div>
+  <nav class="topbar-center" id="desktopNav">
+    <button class="nav-pill active" onclick="nav('home')" id="dn-home" data-pt="Início" data-en="Home">Início</button>
+    <button class="nav-pill" onclick="nav('new')" id="dn-new" data-pt="Nova Inspeção" data-en="New Inspection">Nova Inspeção</button>
+    <button class="nav-pill" onclick="nav('history')" id="dn-history" data-pt="Histórico" data-en="History">Histórico</button>
+    <button class="nav-pill" onclick="nav('settings')" id="dn-settings" data-pt="Perfil" data-en="Profile">Perfil</button>
+  </nav>
+  <div class="topbar-right">
+    <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
+    <button class="icon-btn" onclick="toggleTheme()">
+      <svg id="themeIco" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main-wrap">
+
+  <!-- ── HOME ── -->
+  <section class="screen active" id="sc-home">
+    <div class="page-header">
+      <div class="page-header-kicker" id="ph-kicker">Plataforma de Inspeção Industrial</div>
+      <h1 data-pt="Inspeções<br>de Qualidade" data-en="Quality<br>Inspections" id="ph-title">Inspeções<br>de Qualidade</h1>
+      <p data-pt="Registre, fotografe e gere relatórios de inspeção com precisão técnica." data-en="Record, photograph and generate inspection reports with technical precision." id="ph-sub">Registre, fotografe e gere relatórios de inspeção com precisão técnica.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="st-total">0</div><div class="stat-lbl" data-pt="Total" data-en="Total">Total</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-ok">0</div><div class="stat-lbl" data-pt="Aprovadas" data-en="Approved">Aprovadas</div></div>
+      <div class="stat-card"><div class="stat-num nok" id="st-nok">0</div><div class="stat-lbl" data-pt="Reprovadas" data-en="Rejected">Reprovadas</div></div>
+      <div class="stat-card"><div class="stat-num gray" id="st-draft">0</div><div class="stat-lbl" data-pt="Rascunhos" data-en="Drafts">Rascunhos</div></div>
+    </div>
+    <button class="btn btn-primary btn-full" style="font-size:1rem;padding:13px" onclick="newInspection()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span data-pt="Iniciar Nova Inspeção" data-en="Start New Inspection">Iniciar Nova Inspeção</span>
+    </button>
+    <div class="section-sep" style="margin-top:24px"><span class="section-sep-label" data-pt="Inspeções Recentes" data-en="Recent Inspections">Inspeções Recentes</span></div>
+    <div id="home-list"></div>
+  </section>
+
+  <!-- ── NEW INSPECTION ── -->
+  <section class="screen" id="sc-new">
+    <div class="back-header">
+      <button class="icon-btn" onclick="nav('home')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <h1 data-pt="Nova Inspeção" data-en="New Inspection">Nova Inspeção</h1>
+    </div>
+    <div class="step-header">
+      <div class="step-bar-wrap"><div class="step-bar" id="stepBar" style="width:20%"></div></div>
+      <div class="step-tabs" id="stepTabs">
+        <button class="step-tab active" onclick="goStep(0)" data-pt="Dados" data-en="Data">Dados</button>
+        <button class="step-tab" onclick="goStep(1)" data-pt="Checklist" data-en="Checklist">Checklist</button>
+        <button class="step-tab" onclick="goStep(2)" data-pt="Cotas" data-en="Dims">Cotas</button>
+        <button class="step-tab" onclick="goStep(3)" data-pt="Fotos" data-en="Photos">Fotos</button>
+        <button class="step-tab" onclick="goStep(4)" data-pt="Parecer" data-en="Verdict">Parecer</button>
+      </div>
+    </div>
+
+    <!-- STEP 0 -->
+    <div id="stp-0">
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <span data-pt="Identificação da Peça / Equipamento" data-en="Part / Equipment Identification">Identificação da Peça / Equipamento</span>
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-field"><label data-pt="TAG / Código" data-en="TAG / Code">TAG / Código</label><input type="text" id="f-tag" placeholder="VLV-001-A"></div>
+          <div class="form-field"><label data-pt="Número de Série" data-en="Serial Number">Número de Série</label><input type="text" id="f-serial" placeholder="SN-2025-0042"></div>
+          <div class="form-field" style="grid-column:1/-1"><label data-pt="Descrição do Equipamento" data-en="Equipment Description">Descrição do Equipamento</label><input type="text" id="f-name" placeholder="ex: Válvula esfera 2&quot; flangeada ANSI 300"></div>
+          <div class="form-field"><label data-pt="Material" data-en="Material">Material</label><input type="text" id="f-material" placeholder="ex: AISI 316L"></div>
+          <div class="form-field"><label data-pt="Fabricante" data-en="Manufacturer">Fabricante</label><input type="text" id="f-maker" placeholder="ex: Cameron"></div>
+          <div class="form-field">
+            <label data-pt="Tipo de Equipamento" data-en="Equipment Type">Tipo de Equipamento</label>
+            <select id="f-type" onchange="loadChecklist()">
+              <option value="">-- Selecione --</option>
+              <option value="npt">Rosca NPT / API</option>
+              <option value="flange">Flange</option>
+              <option value="valve">Válvula</option>
+              <option value="tube">Tubo / Conexão</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label data-pt="Norma Aplicável" data-en="Applicable Standard">Norma Aplicável</label>
+            <select id="f-norm">
+              <option>NPT ANSI/ASME B1.20.1</option>
+              <option>API 5B</option><option>API 5CT</option><option>API 6A</option>
+              <option>ISO 11960</option><option>ASME B16.5</option>
+              <option>ASME B16.47</option><option>ASME B36.10</option><option>Outra</option>
+            </select>
+          </div>
+          <div class="form-field"><label data-pt="Data da Inspeção" data-en="Inspection Date">Data da Inspeção</label><input type="date" id="f-date"></div>
+          <div class="form-field"><label data-pt="Local / Obra / Plataforma" data-en="Location / Site / Platform">Local / Obra / Plataforma</label><input type="text" id="f-location" placeholder="ex: Plataforma P-47"></div>
+          <div class="form-field"><label data-pt="Ordem de Serviço" data-en="Work Order">Ordem de Serviço</label><input type="text" id="f-wo" placeholder="OS-2025-0123"></div>
+          <div class="form-field"><label data-pt="Cliente" data-en="Client">Cliente</label><input type="text" id="f-client" placeholder="ex: Petrobras"></div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-primary" onclick="goStep(1)" data-pt="Próximo →" data-en="Next →">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="stp-1" style="display:none">
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <span data-pt="Checklist de Inspeção Visual e Dimensional" data-en="Visual and Dimensional Inspection Checklist">Checklist de Inspeção</span>
+        </div>
+        <div id="cl-list"></div>
+        <button class="add-row-btn" onclick="addClItem()" data-pt="+ Adicionar Item ao Checklist" data-en="+ Add Checklist Item">+ Adicionar Item ao Checklist</button>
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goStep(0)" data-pt="← Anterior" data-en="← Back">← Anterior</button>
+        <button class="btn btn-primary" onclick="goStep(2)" data-pt="Próximo →" data-en="Next →">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="stp-2" style="display:none">
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span data-pt="Cotas Dimensionais — Nominal vs. Medido" data-en="Dimensional Measurements — Nominal vs. Measured">Cotas Dimensionais</span>
+        </div>
+        <div class="cotas-wrap">
+          <table class="cotas-tbl">
+            <thead><tr>
+              <th data-pt="Cota / Dimensão" data-en="Dim. Name">Cota / Dimensão</th>
+              <th data-pt="Nominal" data-en="Nominal">Nominal</th>
+              <th data-pt="Tol. +" data-en="Tol. +">Tol. +</th>
+              <th data-pt="Tol. −" data-en="Tol. −">Tol. −</th>
+              <th data-pt="Medido" data-en="Measured">Medido</th>
+              <th data-pt="Unid." data-en="Unit">Unid.</th>
+              <th>Status</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="cotas-body"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addCota()" data-pt="+ Adicionar Cota / Medição" data-en="+ Add Measurement">+ Adicionar Cota / Medição</button>
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goStep(1)" data-pt="← Anterior" data-en="← Back">← Anterior</button>
+        <button class="btn btn-primary" onclick="goStep(3)" data-pt="Próximo →" data-en="Next →">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="stp-3" style="display:none">
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span data-pt="Registro Fotográfico — Evidências Visuais" data-en="Photo Evidence — Visual Documentation">Registro Fotográfico</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--tx3);margin-bottom:12px" data-pt="Adicione fotos e anote diretamente nas imagens (setas, círculos, texto)." data-en="Add photos and annotate directly on images (arrows, circles, text).">Adicione fotos e anote diretamente nas imagens.</p>
+        <div class="photos-grid" id="photos-grid"></div>
+        <input type="file" id="photoIn" accept="image/*" multiple onchange="handlePhotos(event)">
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goStep(2)" data-pt="← Anterior" data-en="← Back">← Anterior</button>
+        <button class="btn btn-primary" onclick="goStep(4)" data-pt="Próximo →" data-en="Next →">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="stp-4" style="display:none">
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span data-pt="Parecer Final e Assinatura do Inspetor" data-en="Final Verdict and Inspector Signature">Parecer Final</span>
+        </div>
+        <div class="section-sep" style="margin-top:0"><span class="section-sep-label" data-pt="Status da Inspeção" data-en="Inspection Status">Status da Inspeção</span></div>
+        <div class="status-grid">
+          <button class="status-opt ok" onclick="setStatus('approved')">
+            <span class="so-icon">✅</span>
+            <span data-pt="Aprovado" data-en="Approved">Aprovado</span>
+          </button>
+          <button class="status-opt warn" onclick="setStatus('partial')">
+            <span class="so-icon">⚠️</span>
+            <span data-pt="Com Ressalvas" data-en="Conditional">Com Ressalvas</span>
+          </button>
+          <button class="status-opt nok" onclick="setStatus('rejected')">
+            <span class="so-icon">❌</span>
+            <span data-pt="Reprovado" data-en="Rejected">Reprovado</span>
+          </button>
+        </div>
+        <div class="form-field" style="margin-bottom:14px">
+          <label data-pt="Observações Técnicas e Recomendações" data-en="Technical Observations and Recommendations">Observações Técnicas e Recomendações</label>
+          <textarea id="f-obs" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label data-pt="Ação Corretiva Recomendada (se aplicável)" data-en="Recommended Corrective Action (if applicable)">Ação Corretiva Recomendada</label>
+          <input type="text" id="f-action" placeholder="ex: Substituir junta de vedação — prazo 30 dias">
+        </div>
+        <div class="section-sep"><span class="section-sep-label" data-pt="Assinatura Digital do Inspetor" data-en="Inspector's Digital Signature">Assinatura Digital</span></div>
+        <div class="sig-wrap" id="sigWrap">
+          <div class="sig-hint" id="sigHint" data-pt="Assine aqui" data-en="Sign here">Assine aqui</div>
+          <canvas id="sigCanvas" height="140"></canvas>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="clearSig()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          <span data-pt="Limpar Assinatura" data-en="Clear Signature">Limpar Assinatura</span>
+        </button>
+      </div>
+      <div class="step-nav" style="flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="goStep(3)" data-pt="← Anterior" data-en="← Back">← Anterior</button>
+        <button class="btn btn-secondary" onclick="saveInspection(false)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span data-pt="Salvar Rascunho" data-en="Save Draft">Salvar Rascunho</span>
+        </button>
+        <button class="btn btn-primary" onclick="saveInspection(true)" style="font-size:.95rem">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span data-pt="Finalizar e Gerar Relatório" data-en="Finish and Generate Report">Finalizar e Gerar Relatório</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HISTORY ── -->
+  <section class="screen" id="sc-history">
+    <div class="page-header">
+      <div class="page-header-kicker" data-pt="Registro Completo" data-en="Complete Record">Registro Completo</div>
+      <h1 data-pt="Histórico de<br>Inspeções" data-en="Inspection<br>History">Histórico de<br>Inspeções</h1>
+    </div>
+    <div class="chips" id="filterChips">
+      <button class="chip on" onclick="filterHist('all')" data-v="all" data-pt="Todas" data-en="All">Todas</button>
+      <button class="chip" onclick="filterHist('approved')" data-v="approved" data-pt="Aprovadas" data-en="Approved">Aprovadas</button>
+      <button class="chip" onclick="filterHist('partial')" data-v="partial" data-pt="Com Ressalvas" data-en="Conditional">Com Ressalvas</button>
+      <button class="chip" onclick="filterHist('rejected')" data-v="rejected" data-pt="Reprovadas" data-en="Rejected">Reprovadas</button>
+      <button class="chip" onclick="filterHist('draft')" data-v="draft" data-pt="Rascunhos" data-en="Drafts">Rascunhos</button>
+    </div>
+    <div id="hist-list"></div>
+  </section>
+
+  <!-- ── REPORT ── -->
+  <section class="screen" id="sc-report">
+    <div class="back-header">
+      <button class="icon-btn" onclick="nav('history')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <h1 data-pt="Relatório de Inspeção" data-en="Inspection Report">Relatório de Inspeção</h1>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:12px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span data-pt="Idioma do Relatório" data-en="Report Language">Idioma do Relatório</span>
+      </div>
+      <div class="report-lang-sel" id="rptLangSel">
+        <button class="rls-opt on" onclick="setRptLang('pt')" data-v="pt"><span class="rls-flag">🇧🇷</span>Português</button>
+        <button class="rls-opt" onclick="setRptLang('en')" data-v="en"><span class="rls-flag">🇺🇸</span>English</button>
+        <button class="rls-opt" onclick="setRptLang('both')" data-v="both"><span class="rls-flag">🌐</span><span data-pt="Ambos (2 PDFs)" data-en="Both (2 PDFs)">Ambos (2 PDFs)</span></button>
+      </div>
+      <div class="share-row">
+        <button class="btn btn-primary" onclick="downloadPDF()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-pt="Baixar PDF" data-en="Download PDF">Baixar PDF</span>
+        </button>
+        <button class="btn btn-secondary" onclick="shareWA()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+          WhatsApp
+        </button>
+        <button class="btn btn-secondary" onclick="shareEmail()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email
+        </button>
+      </div>
+    </div>
+    <div id="rpt-content"></div>
+  </section>
+
+  <!-- ── SETTINGS / PROFILE ── -->
+  <section class="screen" id="sc-settings">
+    <div class="page-header">
+      <div class="page-header-kicker" data-pt="Configurações do App" data-en="App Settings">Configurações do App</div>
+      <h1 data-pt="Perfil do<br>Inspetor" data-en="Inspector<br>Profile">Perfil do<br>Inspetor</h1>
+      <p data-pt="Suas informações aparecem em todos os relatórios gerados." data-en="Your information appears in all generated reports.">Suas informações aparecem em todos os relatórios gerados.</p>
+    </div>
+
+    <div class="profile-pic-wrap">
+      <!-- Avatar circle -->
+      <div style="position:relative;flex-shrink:0">
+        <div class="profile-pic" id="profilePicWrap">
+          <!-- placeholder icon -->
+          <svg id="profilePicIcon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <!-- actual photo -->
+          <img id="profilePicImg" src="" alt="Foto de perfil" style="display:none">
+          <!-- hover overlay -->
+          <div class="profile-pic-overlay" onclick="document.getElementById('profilePicIn').click()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+        </div>
+        <!-- Edit badge -->
+        <div class="profile-pic-badge" onclick="document.getElementById('profilePicIn').click()" title="Alterar foto">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Info + actions -->
+      <div class="profile-pic-info" style="flex:1;min-width:0">
+        <h3 id="pp-name">Nome do Inspetor</h3>
+        <p id="pp-company">Empresa</p>
+        <div class="pic-actions">
+          <!-- Change photo -->
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('profilePicIn').click()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span data-pt="Alterar Foto" data-en="Change Photo">Alterar Foto</span>
+          </button>
+          <!-- Remove photo -->
+          <button class="btn btn-sm" id="removePicBtn" style="display:none;background:var(--nok-bg);color:var(--nok-c);border:1px solid rgba(192,68,68,.3)" onclick="removeProfilePic()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            <span data-pt="Remover" data-en="Remove">Remover</span>
+          </button>
+        </div>
+        <p style="font-size:.7rem;color:var(--tx3);margin-top:6px" data-pt="JPG, PNG ou WEBP · Máx 5 MB" data-en="JPG, PNG or WEBP · Max 5 MB">JPG, PNG ou WEBP · Máx 5 MB</p>
+        <input type="file" id="profilePicIn" accept="image/*" onchange="handleProfilePic(event)" style="display:none">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span data-pt="Informações Profissionais" data-en="Professional Information">Informações Profissionais</span>
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-field"><label data-pt="Nome Completo" data-en="Full Name">Nome Completo</label><input type="text" id="s-name" placeholder="Eng. João da Silva"></div>
+        <div class="form-field"><label data-pt="Empresa / Contratante" data-en="Company / Contractor">Empresa / Contratante</label><input type="text" id="s-company" placeholder="IndustrialTech Ltda."></div>
+        <div class="form-field"><label data-pt="CREA / Matrícula / ID" data-en="License / ID Number">CREA / Matrícula / ID</label><input type="text" id="s-license" placeholder="CREA 123456-D/SP"></div>
+        <div class="form-field"><label data-pt="Cargo / Função" data-en="Role / Title">Cargo / Função</label><input type="text" id="s-role" placeholder="Inspetor de Qualidade Nível II"></div>
+        <div class="form-field"><label data-pt="E-mail" data-en="E-mail">E-mail</label><input type="email" id="s-email" placeholder="inspetor@empresa.com"></div>
+        <div class="form-field"><label data-pt="Telefone / WhatsApp" data-en="Phone / WhatsApp">Telefone / WhatsApp</label><input type="tel" id="s-phone" placeholder="+55 11 99999-9999"></div>
+        <div class="form-field" style="grid-column:1/-1"><label data-pt="Certificações / Qualificações" data-en="Certifications / Qualifications">Certificações / Qualificações</label><input type="text" id="s-certs" placeholder="ex: ABENDI N1, ASNT Level II, ISO 9001"></div>
+      </div>
+    </div>
+
+    <!-- SAVE BUTTON -->
+    <button class="btn btn-primary btn-full" style="font-size:1rem;padding:14px;margin-bottom:24px" onclick="saveSettsManual()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span data-pt="Salvar Perfil" data-en="Save Profile">Salvar Perfil</span>
+    </button>
+    <div id="saveSettsFeedback" style="display:none;text-align:center;margin-top:-16px;margin-bottom:16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ok-c)">
+      ✓ <span data-pt="Perfil salvo com sucesso!" data-en="Profile saved!">Perfil salvo com sucesso!</span>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="bn-btn active" onclick="nav('home')" id="bn-home">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span data-pt="Início" data-en="Home">Início</span>
+  </button>
+  <button class="bn-btn" onclick="newInspection()" id="bn-new">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span data-pt="Nova" data-en="New">Nova</span>
+  </button>
+  <button class="bn-btn" onclick="nav('history')" id="bn-history">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>
+    <span data-pt="Histórico" data-en="History">Histórico</span>
+  </button>
+  <button class="bn-btn" onclick="nav('settings')" id="bn-settings">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span data-pt="Perfil" data-en="Profile">Perfil</span>
+  </button>
+</nav>
+</div><!-- /shell -->
+
+<!-- ── FAB TOOLS BUTTON ── -->
+<div id="fabWrap" style="position:fixed;bottom:76px;right:18px;z-index:190;display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+  <!-- Sub-buttons (hidden by default) -->
+  <div id="fabMenu" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;opacity:0;pointer-events:none;transform:translateY(10px);transition:all .25s cubic-bezier(.4,0,.2,1);">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="fab-label" data-pt="Calculadora de Tolerâncias" data-en="Tolerance Calculator">Calculadora de Tolerâncias</span>
+      <button class="fab-sub" onclick="openTool('calc')" title="Calculadora">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="fab-label" data-pt="Tabela NPT / API" data-en="NPT / API Table">Tabela NPT / API</span>
+      <button class="fab-sub" onclick="openTool('npt')" title="Tabela NPT">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="fab-label" data-pt="Gráficos de Desempenho" data-en="Performance Charts">Gráficos de Desempenho</span>
+      <button class="fab-sub" onclick="openTool('charts')" title="Gráficos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="fab-label" data-pt="Conversor pol ↔ mm" data-en="in ↔ mm Converter">Conversor pol ↔ mm</span>
+      <button class="fab-sub" onclick="openTool('conv')" title="Conversor">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Main FAB -->
+  <button id="fabMain" onclick="toggleFab()" title="Ferramentas Técnicas" style="width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 16px rgba(54,102,54,.45);transition:all .2s;flex-shrink:0;">
+    <svg id="fabIco" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+  </button>
+</div>
+
+<!-- ── TOOLS MODAL ── -->
+<div class="overlay" id="toolsModal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-hd">
+      <h3 id="toolsTitle" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:.02em">Ferramentas Técnicas</h3>
+      <button class="icon-btn" onclick="closeTool()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- CHARTS PANEL -->
+    <div id="panel-charts" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="card" style="margin-bottom:0;padding:14px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:10px" data-pt="Status Geral" data-en="Overall Status">Status Geral</div>
+          <canvas id="chartDonut" width="200" height="200" style="display:block;margin:auto;max-width:180px"></canvas>
+          <div id="chartLegend" style="margin-top:10px;font-size:.78rem"></div>
+        </div>
+        <div class="card" style="margin-bottom:0;padding:14px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:10px" data-pt="Por Tipo de Equipamento" data-en="By Equipment Type">Por Tipo de Equipamento</div>
+          <canvas id="chartBar" width="300" height="200" style="display:block;width:100%;max-height:200px"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;padding:14px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:10px" data-pt="Inspeções por Mês" data-en="Inspections per Month">Inspeções por Mês</div>
+        <canvas id="chartLine" width="600" height="160" style="display:block;width:100%"></canvas>
+      </div>
+      <div id="chart-empty" style="display:none" class="empty" style="padding:32px">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+        <div class="empty-title">Nenhum dado ainda</div>
+        <p style="font-size:.82rem">Crie inspeções para visualizar os gráficos.</p>
+      </div>
+    </div>
+
+    <!-- NPT TABLE PANEL -->
+    <div id="panel-npt" style="display:none">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+        <div style="flex:1;min-width:160px" class="form-field">
+          <label data-pt="Filtrar por tamanho" data-en="Filter by size">Filtrar por tamanho</label>
+          <input type="text" id="nptFilter" placeholder='ex: 1/2, 2, 3/4' oninput="filterNPT()">
+        </div>
+        <div class="form-field" style="min-width:140px">
+          <label data-pt="Tipo de rosca" data-en="Thread type">Tipo de rosca</label>
+          <select id="nptType" onchange="filterNPT()">
+            <option value="all">NPT + API</option>
+            <option value="npt">NPT apenas</option>
+            <option value="api">API Line Pipe</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:420px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem" id="nptTable">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr style="background:var(--acc);color:#fff">
+              <th style="padding:8px 10px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap">Tamanho (pol)</th>
+              <th style="padding:8px 10px;text-align:center;white-space:nowrap">TPI</th>
+              <th style="padding:8px 10px;text-align:center;white-space:nowrap">Ø Ext. (mm)</th>
+              <th style="padding:8px 10px;text-align:center;white-space:nowrap">Passo (mm)</th>
+              <th style="padding:8px 10px;text-align:center;white-space:nowrap">Eng. Externo (mm)</th>
+              <th style="padding:8px 10px;text-align:center;white-space:nowrap">Eng. Interno (mm)</th>
+              <th style="padding:8px 10px;text-align:center;white-space:nowrap">Tipo</th>
+            </tr>
+          </thead>
+          <tbody id="nptBody"></tbody>
+        </table>
+      </div>
+      <p style="font-size:.72rem;color:var(--tx3);margin-top:8px">Ref.: ANSI/ASME B1.20.1 e API 5B. Valores nominais — verificar sempre com calibrador.</p>
+    </div>
+
+    <!-- CALC PANEL -->
+    <div id="panel-calc" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div class="card" style="margin-bottom:12px;padding:16px">
+            <div class="card-title" style="margin-bottom:12px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span data-pt="Dados de Entrada" data-en="Input Data">Dados de Entrada</span>
+            </div>
+            <div class="form-grid" style="gap:10px">
+              <div class="form-field">
+                <label data-pt="Dimensão Nominal" data-en="Nominal Dimension">Dimensão Nominal</label>
+                <input type="number" id="calcNom" step="any" placeholder="ex: 25.400" oninput="calcTol()">
+              </div>
+              <div class="form-field">
+                <label data-pt="Norma / Padrão" data-en="Standard">Norma / Padrão</label>
+                <select id="calcNorm" onchange="calcTol()">
+                  <optgroup label="ISO / ABNT">
+                    <option value="iso_h7">ISO H7 (furo)</option>
+                    <option value="iso_h8">ISO H8 (furo)</option>
+                    <option value="iso_h9">ISO H9 (furo)</option>
+                    <option value="iso_js6">ISO js6 (eixo)</option>
+                    <option value="iso_k6">ISO k6 (eixo)</option>
+                    <option value="iso_f7">ISO f7 (eixo)</option>
+                    <option value="iso_g6">ISO g6 (eixo)</option>
+                  </optgroup>
+                  <optgroup label="ASME">
+                    <option value="asme_rc3">ASME RC3</option>
+                    <option value="asme_lc4">ASME LC4</option>
+                    <option value="asme_fn2">ASME FN2</option>
+                  </optgroup>
+                  <optgroup label="Personalizada">
+                    <option value="custom">Tolerância Manual</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div id="calcCustomRow" style="display:none;grid-template-columns:1fr 1fr;gap:8px" class="form-grid">
+                <div class="form-field"><label>Tol. + (mm)</label><input type="number" id="calcManP" step="any" placeholder="+0.025" oninput="calcTol()"></div>
+                <div class="form-field"><label>Tol. − (mm)</label><input type="number" id="calcManN" step="any" placeholder="-0.025" oninput="calcTol()"></div>
+              </div>
+              <div class="form-field">
+                <label data-pt="Valor Medido" data-en="Measured Value">Valor Medido</label>
+                <input type="number" id="calcMed" step="any" placeholder="ex: 25.418" oninput="calcTol()">
+              </div>
+              <div class="form-field">
+                <label data-pt="Unidade" data-en="Unit">Unidade</label>
+                <select id="calcUnit" onchange="calcTol()">
+                  <option value="mm">mm</option>
+                  <option value="in">polegadas (in)</option>
+                  <option value="pol">pol</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:12px;padding:16px" id="calcResult">
+            <div class="card-title" style="margin-bottom:12px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span data-pt="Resultado" data-en="Result">Resultado</span>
+            </div>
+            <div id="calcOut" style="text-align:center;padding:20px 0;color:var(--tx3);font-size:.85rem">
+              Preencha os dados ao lado
+            </div>
+          </div>
+          <div class="card" style="padding:14px;margin-bottom:0">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:10px">Visualização</div>
+            <canvas id="calcCanvas" width="280" height="120" style="display:block;width:100%"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px;margin-top:0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:10px" data-pt="Referência Rápida — ISO Tolerâncias Fundamentais" data-en="Quick Reference — ISO Fundamental Tolerances">Referência Rápida — ISO IT Grades</div>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.75rem">
+          <thead><tr style="background:var(--bg3)">
+            <th style="padding:5px 8px;text-align:left;border:1px solid var(--line)">Nominal (mm)</th>
+            <th style="padding:5px 8px;text-align:center;border:1px solid var(--line)">IT6</th>
+            <th style="padding:5px 8px;text-align:center;border:1px solid var(--line)">IT7</th>
+            <th style="padding:5px 8px;text-align:center;border:1px solid var(--line)">IT8</th>
+            <th style="padding:5px 8px;text-align:center;border:1px solid var(--line)">IT9</th>
+          </tr></thead>
+          <tbody id="itTable"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- CONVERTER PANEL -->
+    <div id="panel-conv" style="display:none">
+      <!-- Main converter card -->
+      <div class="card" style="margin-bottom:12px;padding:20px">
+        <div class="card-title" style="margin-bottom:16px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+          <span data-pt="Conversor de Unidades — Polegadas ↔ Milímetros" data-en="Unit Converter — Inches ↔ Millimeters">Conversor pol ↔ mm</span>
+        </div>
+
+        <!-- IN → MM -->
+        <div style="background:var(--bg3);border-radius:var(--r3);padding:16px;margin-bottom:12px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);margin-bottom:10px">Polegadas → Milímetros</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:120px" class="form-field">
+              <label>Polegadas (in)</label>
+              <input type="number" id="cv-in" step="any" placeholder="ex: 2.500" oninput="convFromIn()" style="font-family:'JetBrains Mono',monospace;font-size:1rem">
+            </div>
+            <div style="font-size:1.4rem;color:var(--acc);font-weight:700;padding-top:16px">=</div>
+            <div style="flex:1;min-width:120px" class="form-field">
+              <label>Milímetros (mm)</label>
+              <input type="number" id="cv-mm-out" step="any" placeholder="—" readonly style="font-family:'JetBrains Mono',monospace;font-size:1rem;background:var(--bg2);font-weight:600;color:var(--acc)">
+            </div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:16px;padding:9px" onclick="copyVal('cv-mm-out')" title="Copiar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+          <!-- Fractions row -->
+          <div style="margin-top:10px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:6px">Frações comuns (clique para converter)</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap" id="fracBtns"></div>
+          </div>
+        </div>
+
+        <!-- MM → IN -->
+        <div style="background:var(--bg3);border-radius:var(--r3);padding:16px;margin-bottom:12px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);margin-bottom:10px">Milímetros → Polegadas</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:120px" class="form-field">
+              <label>Milímetros (mm)</label>
+              <input type="number" id="cv-mm" step="any" placeholder="ex: 25.400" oninput="convFromMm()" style="font-family:'JetBrains Mono',monospace;font-size:1rem">
+            </div>
+            <div style="font-size:1.4rem;color:var(--acc);font-weight:700;padding-top:16px">=</div>
+            <div style="flex:1;min-width:120px" class="form-field">
+              <label>Polegadas (in)</label>
+              <input type="number" id="cv-in-out" step="any" placeholder="—" readonly style="font-family:'JetBrains Mono',monospace;font-size:1rem;background:var(--bg2);font-weight:600;color:var(--acc)">
+            </div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:16px;padding:9px" onclick="copyVal('cv-in-out')" title="Copiar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+          <div id="cv-fraction-label" style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--tx3);margin-top:8px;min-height:1.2em"></div>
+        </div>
+
+        <!-- Pipe sizes quick ref -->
+        <div style="background:var(--bg3);border-radius:var(--r3);padding:16px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);margin-bottom:10px" data-pt="Polegadas fracionárias → Decimal → mm" data-en="Fractional inches → Decimal → mm">Polegadas fracionárias → Decimal → mm</div>
+          <div style="overflow-x:auto;max-height:260px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+              <thead style="position:sticky;top:0">
+                <tr style="background:var(--acc)">
+                  <th style="padding:6px 10px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase">Fração</th>
+                  <th style="padding:6px 10px;color:#fff;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase">Decimal (in)</th>
+                  <th style="padding:6px 10px;color:#fff;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase">mm</th>
+                </tr>
+              </thead>
+              <tbody id="convTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipe OD reference -->
+      <div class="card" style="padding:16px;margin-bottom:0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:10px">⌀ Referência — OD Tubos (NPS) pol → mm</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+            <thead><tr style="background:var(--bg3)">
+              <th style="padding:5px 10px;border:1px solid var(--line);text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em">NPS</th>
+              <th style="padding:5px 10px;border:1px solid var(--line);text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em">OD (in)</th>
+              <th style="padding:5px 10px;border:1px solid var(--line);text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em">OD (mm)</th>
+            </tr></thead>
+            <tbody id="npsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── PHOTO ANNOTATE MODAL ── -->
+<div class="overlay" id="photoModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3 data-pt="Anotar Foto" data-en="Annotate Photo">Anotar Foto</h3>
+      <button class="icon-btn" onclick="closePhotoModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="draw-toolbar">
+      <button class="dt-btn on" id="dt-pen" onclick="setTool('pen')" data-pt="✏ Caneta" data-en="✏ Pen">✏ Caneta</button>
+      <button class="dt-btn" id="dt-arrow" onclick="setTool('arrow')" data-pt="→ Seta" data-en="→ Arrow">→ Seta</button>
+      <button class="dt-btn" id="dt-rect" onclick="setTool('rect')" data-pt="▭ Retângulo" data-en="▭ Rect">▭ Retângulo</button>
+      <button class="dt-btn" id="dt-circle" onclick="setTool('circle')" data-pt="○ Círculo" data-en="○ Circle">○ Círculo</button>
+      <button class="dt-btn" id="dt-text" onclick="setTool('text')" data-pt="T Texto" data-en="T Text">T Texto</button>
+      <div style="display:flex;gap:4px;align-items:center;margin-left:auto;flex-shrink:0">
+        <div class="color-swatch on" style="background:#e74c3c" onclick="setColor(this,'#e74c3c')"></div>
+        <div class="color-swatch" style="background:#f1c40f" onclick="setColor(this,'#f1c40f')"></div>
+        <div class="color-swatch" style="background:#2ecc71" onclick="setColor(this,'#2ecc71')"></div>
+        <div class="color-swatch" style="background:#3498db" onclick="setColor(this,'#3498db')"></div>
+        <div class="color-swatch" style="background:#ffffff;border:1px solid #666" onclick="setColor(this,'#ffffff')"></div>
+      </div>
+      <input type="range" min="1" max="8" value="3" id="brushSize" style="width:70px;accent-color:var(--acc)">
+      <button class="dt-btn" onclick="undoDraw()" data-pt="↩ Desfazer" data-en="↩ Undo">↩</button>
+      <button class="dt-btn" onclick="clearDraw()" data-pt="🗑 Limpar" data-en="🗑 Clear">🗑</button>
+    </div>
+    <div class="canvas-box">
+      <canvas id="annotCanvas"></canvas>
+    </div>
+    <div class="form-field" style="margin-top:10px">
+      <label data-pt="Legenda / Descrição da Foto" data-en="Photo Caption / Description">Legenda / Descrição da Foto</label>
+      <input type="text" id="photoCap" data-pt-placeholder="ex: Detalhe da rosca NPT — vista superior" data-en-placeholder="ex: NPT thread detail — top view" placeholder="ex: Detalhe da rosca NPT — vista superior">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="btn btn-secondary" onclick="closePhotoModal()" data-pt="Cancelar" data-en="Cancel">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePhoto()" data-pt="Salvar Foto" data-en="Save Photo">Salvar Foto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let L = 'pt'; // language
+let inspections = [];
+let setts = {name:'',company:'',license:'',role:'',email:'',phone:'',certs:'',pic:''};
+let curInsp = null;
+let rptLang = 'pt';
+let rptInspId = null;
+
+const CHECKLISTS = {
+  npt:['Passo da rosca (TPI)','Conicidade (1:16 por pé)','Comprimento de engajamento','Danos mecânicos — ding / galling','Corrosão ou oxidação','Calibrador go/no-go','Marcação e identificação (schedule, material)','Limpeza e integridade das roscas','Lubrificante / compound aplicado'],
+  flange:['Integridade da face de vedação (raised face, RTJ)','Furação — PCD e diâmetro dos furos','Diâmetro externo e interno','Acabamento superficial (rugosidade)','Marcação (ASME, schedule, classe, material)','Pintura / revestimento anti-corrosivo','Paralelismo entre faces','Ausência de trincas e poros','Identificação de material (PMI)'],
+  valve:['Integridade do corpo e tampa','Atuador / haste sem deformação','Vedação do stem packing','Operação (abertura/fechamento completo)','TAG e nameplate legíveis','Teste de estanqueidade (leakage)','Indicador de posição (aberto/fechado)','Conexões de processo (flange/rosca)','Proteção contra corrosão'],
+  tube:['Diâmetro externo (OD) — medição física','Espessura de parede (WT) — ultrassom/paquímetro','Chanfro / bisel conforme norma','Revestimento / pintura / galvanização','Marcação completa (norma, material, schedule)','Ovalização (diferença entre dois ODs)','Comprimento de corte / chanfro','Ausência de amassados / mossas','Ausência de laminações ou inclusões']
+};
+let customCL = {};
+
+// ═══════════════════════════════════════════
+// ANNOTATION
+// ═══════════════════════════════════════════
+let drawTool='pen', drawColor='#e74c3c';
+let isDrawing=false, drawStart=null, drawSnap=null;
+let annotHist=[], annotCanvas, annotCtx;
+let pendingImg=null, editingPhotoIdx=null;
+let isSigning=false;
+let sigCanvas, sigCtx;
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  loadAll();
+  initSig();
+  renderHome();
+  renderProfileUI();
+  setTodayDate();
+  applyLang();
+  renderPhotosGrid();
+  const savedTheme = localStorage.getItem('iproTh');
+  if (!savedTheme) document.body.dataset.theme = 'light';
+  const dsw=document.getElementById('darkSw'); if(dsw) dsw.checked = document.body.dataset.theme==='dark';
+});
+
+function loadAll(){
+  try{
+    const d=localStorage.getItem('iproPo');
+    if(d) inspections=JSON.parse(d);
+    const s=localStorage.getItem('iproSe');
+    if(s) setts=Object.assign({},setts,JSON.parse(s));
+    const c=localStorage.getItem('iproCL');
+    if(c) customCL=JSON.parse(c);
+    else customCL=JSON.parse(JSON.stringify(CHECKLISTS));
+    const t=localStorage.getItem('iproTh');
+    if(t) document.body.dataset.theme=t;
+    const l=localStorage.getItem('iproLg');
+    if(l) L=l;
+  }catch(e){ customCL=JSON.parse(JSON.stringify(CHECKLISTS)); }
+}
+function saveInspections(){ localStorage.setItem('iproPo',JSON.stringify(inspections)); }
+function setTodayDate(){
+  const el=document.getElementById('f-date');
+  if(el) el.value=new Date().toISOString().split('T')[0];
+}
+
+// ═══════════════════════════════════════════
+// THEME / LANG
+// ═══════════════════════════════════════════
+function toggleTheme(){
+  const t=document.body.dataset.theme==='dark'?'light':'dark';
+  document.body.dataset.theme=t;
+  localStorage.setItem('iproTh',t);
+  const dsw=document.getElementById('darkSw'); if(dsw) dsw.checked=t==='dark';
+}
+function toggleThemeSw(){
+  const c=document.getElementById('darkSw').checked;
+  document.body.dataset.theme=c?'dark':'light';
+  localStorage.setItem('iproTh',c?'dark':'light');
+}
+function toggleLang(){
+  L=L==='pt'?'en':'pt';
+  localStorage.setItem('iproLg',L);
+  applyLang();
+}
+function applyLang(){
+  document.getElementById('langBtn').textContent=L==='pt'?'EN':'PT';
+  document.querySelectorAll('[data-pt]').forEach(el=>{
+    if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') return;
+    const txt=L==='pt'?el.dataset.pt:el.dataset.en||el.dataset.pt;
+    if(txt) el.innerHTML=txt;
+  });
+  document.querySelectorAll('[data-pt-placeholder]').forEach(el=>{
+    el.placeholder=L==='pt'?el.dataset.ptPlaceholder:el.dataset.enPlaceholder||el.dataset.ptPlaceholder;
+  });
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function nav(sc){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-'+sc).classList.add('active');
+  ['home','history','settings'].forEach(n=>{
+    const b=document.getElementById('bn-'+n);
+    const d=document.getElementById('dn-'+n);
+    if(b) b.classList.toggle('active',n===sc);
+    if(d) d.classList.toggle('active',n===sc);
+  });
+  if(sc==='home') renderHome();
+  if(sc==='history') renderHist('all');
+}
+
+// ═══════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════
+function renderHome(){
+  document.getElementById('st-total').textContent=inspections.length;
+  document.getElementById('st-ok').textContent=inspections.filter(i=>i.status==='approved').length;
+  document.getElementById('st-nok').textContent=inspections.filter(i=>i.status==='rejected').length;
+  document.getElementById('st-draft').textContent=inspections.filter(i=>i.status==='draft'||!i.status).length;
+  const recent=[...inspections].reverse().slice(0,6);
+  const el=document.getElementById('home-list');
+  if(!recent.length){
+    el.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg><div class="empty-title">${L==='pt'?'Nenhuma inspeção registrada':'No inspections recorded'}</div><p style="font-size:.85rem">${L==='pt'?'Comece criando sua primeira inspeção.':'Start by creating your first inspection.'}</p></div>`;
+    return;
+  }
+  el.innerHTML=recent.map(i=>cardHTML(i,true)).join('');
+}
+
+function cardHTML(i,del=false){
+  const tl={npt:'Rosca NPT/API',flange:'Flange',valve:'Válvula',tube:'Tubo/Conexão'};
+  const sl={approved:L==='pt'?'Aprovado':'Approved',rejected:L==='pt'?'Reprovado':'Rejected',partial:L==='pt'?'Com Ressalvas':'Conditional',draft:L==='pt'?'Rascunho':'Draft'};
+  const bc={approved:'badge-ok',rejected:'badge-nok',partial:'badge-warn',draft:'badge-draft'};
+  const ic={
+    npt:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`,
+    flange:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg>`,
+    valve:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v4l-4 4 4 4v4M16 3v4l4 4-4 4v4M8 12h8"/></svg>`,
+    tube:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h16M4 15h16M9 4v16M15 4v16"/></svg>`
+  };
+  return `<div class="insp-card" onclick="openReport('${i.id}')">
+    <div class="insp-card-accent"></div>
+    <div class="insp-icon">${ic[i.type]||ic.npt}</div>
+    <div class="insp-info">
+      <div class="insp-tag">${i.tag||'—'} ${i.wo?'· OS: '+i.wo:''}</div>
+      <div class="insp-name">${i.name||L==='pt'?i.name||'Sem título':'Untitled'}</div>
+      <div class="insp-meta">${tl[i.type]||i.type||'—'} · ${i.date||''} · ${i.location||''}</div>
+    </div>
+    <div class="insp-right">
+      <span class="badge ${bc[i.status]||'badge-draft'}">${sl[i.status]||'Draft'}</span>
+      ${del?`<button onclick="delInsp('${i.id}',event)" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:.8rem;padding:2px 4px">🗑</button>`:''}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// NEW INSPECTION
+// ═══════════════════════════════════════════
+function newInspection(){
+  curInsp={id:Date.now().toString(),tag:'',serial:'',name:'',material:'',maker:'',type:'',norm:'',date:'',location:'',wo:'',client:'',checklist:[],cotas:[],photos:[],obs:'',action:'',status:null,signature:null};
+  setTodayDate();
+  ['f-tag','f-serial','f-name','f-material','f-maker','f-wo','f-client','f-obs','f-action'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('f-type').value='';
+  document.getElementById('cl-list').innerHTML='';
+  document.getElementById('cotas-body').innerHTML='';
+  document.querySelectorAll('.status-opt').forEach(b=>b.classList.remove('sel'));
+  clearSig();
+  renderPhotosGrid();
+  goStep(0);
+  nav('new');
+}
+
+function goStep(n){
+  for(let i=0;i<5;i++){
+    const s=document.getElementById('stp-'+i);
+    if(s) s.style.display=i===n?'block':'none';
+  }
+  const tabs=document.querySelectorAll('.step-tab');
+  tabs.forEach((t,i)=>{
+    t.classList.toggle('active',i===n);
+    t.classList.toggle('done',i<n);
+  });
+  document.getElementById('stepBar').style.width=((n+1)/5*100)+'%';
+  if(n===1) loadChecklist();
+}
+
+// ═══════════════════════════════════════════
+// CHECKLIST
+// ═══════════════════════════════════════════
+function loadChecklist(){
+  const type=document.getElementById('f-type').value;
+  if(!type) return;
+  const items=customCL[type]||CHECKLISTS[type]||[];
+  const ex={};
+  if(curInsp&&curInsp.checklist) curInsp.checklist.forEach(c=>ex[c.label]=c.status);
+  document.getElementById('cl-list').innerHTML=items.map(item=>`
+    <div class="cl-item">
+      <span class="cl-label">${item}</span>
+      <div class="cl-btns">
+        <button class="cl-btn ok ${ex[item]==='ok'?'on':''}" onclick="setCL(this,'ok')" title="OK / Conforme">✓</button>
+        <button class="cl-btn nok ${ex[item]==='nok'?'on':''}" onclick="setCL(this,'nok')" title="NOK / Não Conforme">✗</button>
+        <button class="cl-btn obs ${ex[item]==='obs'?'on':''}" onclick="setCL(this,'obs')" title="Observação">!</button>
+      </div>
+    </div>`).join('');
+}
+function setCL(btn,st){
+  const row=btn.closest('.cl-item');
+  row.querySelectorAll('.cl-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function addClItem(){
+  const label=prompt(L==='pt'?'Nome do item:':'Item name:');
+  if(!label) return;
+  const cl=document.getElementById('cl-list');
+  const d=document.createElement('div');
+  d.className='cl-item';
+  d.innerHTML=`<span class="cl-label">${label}</span><div class="cl-btns"><button class="cl-btn ok" onclick="setCL(this,'ok')">✓</button><button class="cl-btn nok" onclick="setCL(this,'nok')">✗</button><button class="cl-btn obs" onclick="setCL(this,'obs')">!</button></div>`;
+  cl.appendChild(d);
+}
+function collectCL(){
+  const r=[];
+  document.querySelectorAll('#cl-list .cl-item').forEach(row=>{
+    const lbl=row.querySelector('.cl-label').textContent;
+    const on=row.querySelector('.cl-btn.on');
+    r.push({label:lbl,status:on?on.classList[1]:'nd'});
+  });
+  return r;
+}
+
+// ═══════════════════════════════════════════
+// COTAS
+// ═══════════════════════════════════════════
+function addCota(){
+  const tb=document.getElementById('cotas-body');
+  const id='c'+Date.now();
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input type="text" placeholder="${L==='pt'?'ex: OD':'ex: OD'}" style="min-width:90px"></td>
+    <td><input type="number" step="any" placeholder="0.00" style="min-width:70px"></td>
+    <td><input type="number" step="any" placeholder="+0.05" style="min-width:60px"></td>
+    <td><input type="number" step="any" placeholder="-0.05" style="min-width:60px"></td>
+    <td><input type="number" step="any" placeholder="0.00" style="min-width:70px" oninput="updateSem(this)"></td>
+    <td><input type="text" placeholder="mm" style="min-width:48px"></td>
+    <td><div class="sem sem-nd" id="${id}">—</div></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--nok-c);padding:4px;font-size:1rem">✕</button></td>`;
+  tr.querySelector('input[type=number]:nth-of-type(4)').dataset.semId=id;
+  tb.appendChild(tr);
+}
+function updateSem(inp){
+  const row=inp.closest('tr');
+  const nums=row.querySelectorAll('input[type=number]');
+  const nom=parseFloat(nums[0].value);
+  const tP=parseFloat(nums[1].value)||0;
+  const tN=parseFloat(nums[2].value)||0;
+  const med=parseFloat(inp.value);
+  const semId=inp.dataset.semId;
+  if(!semId) return;
+  const sem=document.getElementById(semId);
+  if(!sem) return;
+  if(isNaN(med)||isNaN(nom)){sem.className='sem sem-nd';sem.textContent='—';return;}
+  const diff=med-nom;
+  if(diff>=tN&&diff<=tP){sem.className='sem sem-ok';sem.textContent='✓';}
+  else if(Math.abs(diff)<Math.max(Math.abs(tP),Math.abs(tN))*2){sem.className='sem sem-warn';sem.textContent='!';}
+  else{sem.className='sem sem-nok';sem.textContent='✗';}
+}
+function collectCotas(){
+  const r=[];
+  document.querySelectorAll('#cotas-body tr').forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    const sem=row.querySelector('.sem');
+    if(inputs[0]&&inputs[0].value){
+      r.push({name:inputs[0].value,nominal:inputs[1].value,tolP:inputs[2].value,tolN:inputs[3].value,medido:inputs[4].value,unit:inputs[5].value,status:sem?sem.textContent:'—'});
+    }
+  });
+  return r;
+}
+
+// ═══════════════════════════════════════════
+// PHOTOS
+// ═══════════════════════════════════════════
+function renderPhotosGrid(){
+  const grid=document.getElementById('photos-grid');
+  if(!grid) return;
+  const photos=curInsp?.photos||[];
+  grid.innerHTML=photos.map((p,i)=>`
+    <div class="photo-card" onclick="editPhoto(${i})">
+      <img src="${p.data}" alt="${p.caption||''}">
+      <button class="p-del" onclick="delPhoto(${i},event)">✕</button>
+      <div class="p-cap">${p.caption||''}</div>
+    </div>`).join('') +
+    `<button class="photo-add" onclick="document.getElementById('photoIn').click()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>${L==='pt'?'Adicionar Foto':'Add Photo'}</span>
+    </button>`;
+}
+function handlePhotos(e){
+  const files=Array.from(e.target.files);
+  files.forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>openPhotoModal(ev.target.result,null);
+    r.readAsDataURL(f);
+  });
+  e.target.value='';
+}
+function editPhoto(idx){
+  openPhotoModal(curInsp.photos[idx].data,idx);
+}
+function delPhoto(idx,e){
+  e.stopPropagation();
+  curInsp.photos.splice(idx,1);
+  renderPhotosGrid();
+}
+function openPhotoModal(imgData,idx){
+  pendingImg=imgData; editingPhotoIdx=idx;
+  document.getElementById('photoModal').classList.add('open');
+  document.getElementById('photoCap').value=idx!==null&&curInsp.photos[idx]?curInsp.photos[idx].caption||'':'';
+  const modal=document.getElementById('photoModal');
+  annotCanvas=document.getElementById('annotCanvas');
+  annotCtx=annotCanvas.getContext('2d');
+  const img=new Image();
+  img.onload=function(){
+    const box=modal.querySelector('.canvas-box');
+    const w=box.offsetWidth||640;
+    const ratio=img.height/img.width;
+    annotCanvas.width=w; annotCanvas.height=w*ratio;
+    annotCanvas.style.height=(w*ratio)+'px';
+    annotCtx.drawImage(img,0,0,annotCanvas.width,annotCanvas.height);
+    annotHist=[annotCtx.getImageData(0,0,annotCanvas.width,annotCanvas.height)];
+    setupAnnotate();
+  };
+  img.src=imgData;
+}
+function setupAnnotate(){
+  const c=annotCanvas;
+  const gp=(e)=>{
+    const r=c.getBoundingClientRect();
+    const sx=c.width/r.width; const sy=c.height/r.height;
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    const cy=e.touches?e.touches[0].clientY:e.clientY;
+    return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};
+  };
+  c.onmousedown=c.ontouchstart=(e)=>{
+    e.preventDefault(); isDrawing=true;
+    drawStart=gp(e);
+    drawSnap=annotCtx.getImageData(0,0,c.width,c.height);
+    if(drawTool==='pen'){annotCtx.beginPath();annotCtx.moveTo(drawStart.x,drawStart.y);}
+    if(drawTool==='text'){
+      const tx=prompt(L==='pt'?'Texto:':'Text:');
+      if(tx){
+        const bs=parseInt(document.getElementById('brushSize').value)||3;
+        annotCtx.font=`bold ${12+bs*2}px Barlow Condensed, sans-serif`;
+        annotCtx.fillStyle=drawColor;
+        annotCtx.strokeStyle='rgba(0,0,0,.5)'; annotCtx.lineWidth=1;
+        annotCtx.strokeText(tx,drawStart.x,drawStart.y);
+        annotCtx.fillText(tx,drawStart.x,drawStart.y);
+        annotHist.push(annotCtx.getImageData(0,0,c.width,c.height));
+      }
+      isDrawing=false;
+    }
+  };
+  c.onmousemove=c.ontouchmove=(e)=>{
+    if(!isDrawing||drawTool==='text') return;
+    e.preventDefault();
+    const pos=gp(e);
+    const bs=parseInt(document.getElementById('brushSize').value)||3;
+    annotCtx.strokeStyle=drawColor; annotCtx.lineWidth=bs; annotCtx.lineCap='round'; annotCtx.lineJoin='round';
+    if(drawTool==='pen'){annotCtx.lineTo(pos.x,pos.y);annotCtx.stroke();}
+    else{annotCtx.putImageData(drawSnap,0,0);drawShape(drawStart,pos,bs);}
+  };
+  c.onmouseup=c.ontouchend=()=>{
+    if(!isDrawing) return; isDrawing=false;
+    annotHist.push(annotCtx.getImageData(0,0,annotCanvas.width,annotCanvas.height));
+  };
+}
+function drawShape(s,e,bs){
+  const c=annotCtx;
+  c.strokeStyle=drawColor; c.lineWidth=bs; c.lineCap='round';
+  if(drawTool==='rect'){c.beginPath();c.strokeRect(s.x,s.y,e.x-s.x,e.y-s.y);}
+  if(drawTool==='circle'){c.beginPath();const rx=(e.x-s.x)/2,ry=(e.y-s.y)/2;c.ellipse(s.x+rx,s.y+ry,Math.abs(rx),Math.abs(ry),0,0,Math.PI*2);c.stroke();}
+  if(drawTool==='arrow'){
+    c.beginPath();c.moveTo(s.x,s.y);c.lineTo(e.x,e.y);c.stroke();
+    const ang=Math.atan2(e.y-s.y,e.x-s.x);
+    const hw=bs*4+6;
+    c.beginPath();c.moveTo(e.x,e.y);
+    c.lineTo(e.x-hw*Math.cos(ang-Math.PI/6),e.y-hw*Math.sin(ang-Math.PI/6));
+    c.lineTo(e.x-hw*Math.cos(ang+Math.PI/6),e.y-hw*Math.sin(ang+Math.PI/6));
+    c.closePath();c.fillStyle=drawColor;c.fill();
+  }
+}
+function setTool(t){
+  drawTool=t;
+  ['pen','arrow','rect','circle','text'].forEach(n=>{
+    const b=document.getElementById('dt-'+n);
+    if(b) b.classList.toggle('on',n===t);
+  });
+}
+function setColor(el,c){
+  drawColor=c;
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+}
+function undoDraw(){if(annotHist.length>1){annotHist.pop();annotCtx.putImageData(annotHist[annotHist.length-1],0,0);}}
+function clearDraw(){if(annotHist.length){annotCtx.putImageData(annotHist[0],0,0);annotHist=[annotHist[0]];}}
+function savePhoto(){
+  const finalImg=annotCanvas.toDataURL('image/jpeg',.88);
+  const cap=document.getElementById('photoCap').value;
+  if(!curInsp.photos) curInsp.photos=[];
+  if(editingPhotoIdx!==null) curInsp.photos[editingPhotoIdx]={data:finalImg,caption:cap};
+  else curInsp.photos.push({data:finalImg,caption:cap});
+  closePhotoModal();
+  renderPhotosGrid();
+}
+function closePhotoModal(){document.getElementById('photoModal').classList.remove('open');pendingImg=null;editingPhotoIdx=null;}
+
+// ═══════════════════════════════════════════
+// SIGNATURE
+// ═══════════════════════════════════════════
+function initSig(){
+  sigCanvas=document.getElementById('sigCanvas');
+  if(!sigCanvas) return;
+  sigCtx=sigCanvas.getContext('2d');
+  sigCanvas.width=sigCanvas.offsetWidth||600;
+  const gp=(e)=>{
+    const r=sigCanvas.getBoundingClientRect();
+    const sx=sigCanvas.width/r.width,sy=sigCanvas.height/r.height;
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    const cy=e.touches?e.touches[0].clientY:e.clientY;
+    return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};
+  };
+  sigCanvas.onmousedown=sigCanvas.ontouchstart=(e)=>{e.preventDefault();isSigning=true;const p=gp(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);document.getElementById('sigHint').style.opacity='0';};
+  sigCanvas.onmousemove=sigCanvas.ontouchmove=(e)=>{if(!isSigning) return;e.preventDefault();const p=gp(e);const col=document.body.dataset.theme==='dark'?'#e8ece8':'#1a201a';sigCtx.strokeStyle=col;sigCtx.lineWidth=2;sigCtx.lineCap='round';sigCtx.lineJoin='round';sigCtx.lineTo(p.x,p.y);sigCtx.stroke();};
+  sigCanvas.onmouseup=sigCanvas.ontouchend=()=>{isSigning=false;};
+}
+function clearSig(){if(sigCtx){sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height);document.getElementById('sigHint').style.opacity='1';}}
+
+// ═══════════════════════════════════════════
+// STATUS
+// ═══════════════════════════════════════════
+function setStatus(s){
+  document.querySelectorAll('.status-opt').forEach(b=>b.classList.remove('sel'));
+  const b=document.querySelector('.status-opt.'+s);
+  if(b) b.classList.add('sel');
+  if(curInsp) curInsp.status=s;
+}
+
+// ═══════════════════════════════════════════
+// SAVE INSPECTION
+// ═══════════════════════════════════════════
+function saveInspection(finish){
+  if(!curInsp) return;
+  curInsp.tag=document.getElementById('f-tag').value;
+  curInsp.serial=document.getElementById('f-serial').value;
+  curInsp.name=document.getElementById('f-name').value;
+  curInsp.material=document.getElementById('f-material').value;
+  curInsp.maker=document.getElementById('f-maker').value;
+  curInsp.type=document.getElementById('f-type').value;
+  curInsp.norm=document.getElementById('f-norm').value;
+  curInsp.date=document.getElementById('f-date').value;
+  curInsp.location=document.getElementById('f-location').value;
+  curInsp.wo=document.getElementById('f-wo').value;
+  curInsp.client=document.getElementById('f-client').value;
+  curInsp.checklist=collectCL();
+  curInsp.cotas=collectCotas();
+  curInsp.obs=document.getElementById('f-obs').value;
+  curInsp.action=document.getElementById('f-action').value;
+  curInsp.signature=sigCanvas.toDataURL();
+  if(!curInsp.status) curInsp.status='draft';
+  const idx=inspections.findIndex(i=>i.id===curInsp.id);
+  if(idx>=0) inspections[idx]=curInsp;
+  else inspections.push(curInsp);
+  saveInspections();
+  if(finish){ openReport(curInsp.id); }
+  else{ alert(L==='pt'?'Rascunho salvo!':'Draft saved!'); nav('home'); }
+}
+
+// ═══════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════
+function renderHist(filter){
+  let list=[...inspections].reverse();
+  if(filter!=='all') list=list.filter(i=>i.status===filter||(filter==='draft'&&!i.status));
+  const el=document.getElementById('hist-list');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><div class="empty-title">${L==='pt'?'Nenhum resultado encontrado':'No results found'}</div></div>`;
+    return;
+  }
+  el.innerHTML=list.map(i=>cardHTML(i,true)).join('');
+}
+function filterHist(v){
+  document.querySelectorAll('#filterChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));
+  renderHist(v);
+}
+function delInsp(id,e){
+  e.stopPropagation();
+  if(!confirm(L==='pt'?'Excluir esta inspeção?':'Delete this inspection?')) return;
+  inspections=inspections.filter(i=>i.id!==id);
+  saveInspections();
+  const chip=document.querySelector('#filterChips .chip.on');
+  renderHist(chip?chip.dataset.v:'all');
+  renderHome();
+}
+
+// ═══════════════════════════════════════════
+// REPORT
+// ═══════════════════════════════════════════
+function setRptLang(v){
+  rptLang=v;
+  document.querySelectorAll('.rls-opt').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  // re-render preview
+  if(rptInspId) buildReportHTML(rptInspId, v==='both'?'pt':v);
+}
+
+function openReport(id){
+  rptInspId=id;
+  const insp=inspections.find(i=>i.id===id);
+  if(!insp) return;
+  buildReportHTML(id,'pt');
+  nav('report');
+  document.getElementById('sc-report').classList.add('active');
+}
+
+function buildReportHTML(id, lang){
+  const insp=inspections.find(i=>i.id===id);
+  if(!insp) return;
+  document.getElementById('rpt-content').innerHTML=genReportHTML(insp,lang);
+}
+
+function genReportHTML(insp, lg){
+  const s=setts;
+  const T={
+    pt:{title:'RELATÓRIO DE INSPEÇÃO',ident:'IDENTIFICAÇÃO DO EQUIPAMENTO',check:'CHECKLIST DE INSPEÇÃO',cotas:'COTAS DIMENSIONAIS — NOMINAL VS. MEDIDO',photos:'REGISTRO FOTOGRÁFICO',verdict:'PARECER FINAL',obs:'Observações Técnicas',action:'Ação Corretiva',sig:'Assinatura do Inspetor',tag:'TAG',desc:'Descrição',serial:'Nº Série',mat:'Material',fab:'Fabricante',type:'Tipo',norm:'Norma',date:'Data',loc:'Local',wo:'OS',client:'Cliente',item:'Item de Inspeção',status:'Status',dim:'Cota',nom:'Nominal',tol:'Tolerância',med:'Medido',unit:'Unid.',footer:'Gerado por InspectPro',conform:'✓ Conforme',nonconform:'✗ Não Conforme',obs_item:'! Observação',na:'— N/A',approved:'APROVADO',rejected:'REPROVADO',partial:'APROVADO COM RESSALVAS',draft:'RASCUNHO'},
+    en:{title:'INSPECTION REPORT',ident:'EQUIPMENT IDENTIFICATION',check:'INSPECTION CHECKLIST',cotas:'DIMENSIONAL MEASUREMENTS — NOMINAL VS. MEASURED',photos:'PHOTOGRAPHIC EVIDENCE',verdict:'FINAL VERDICT',obs:'Technical Observations',action:'Corrective Action',sig:"Inspector's Signature",tag:'TAG',desc:'Description',serial:'Serial No.',mat:'Material',fab:'Manufacturer',type:'Type',norm:'Standard',date:'Date',loc:'Location',wo:'Work Order',client:'Client',item:'Inspection Item',status:'Status',dim:'Dimension',nom:'Nominal',tol:'Tolerance',med:'Measured',unit:'Unit',footer:'Generated by InspectPro',conform:'✓ Conforming',nonconform:'✗ Non-Conforming',obs_item:'! Observation',na:'— N/A',approved:'APPROVED',rejected:'REJECTED',partial:'CONDITIONALLY APPROVED',draft:'DRAFT'}
+  };
+  const t=T[lg]||T.pt;
+  const typeL={npt:'NPT/API Thread',flange:'Flange',valve:'Valve / Válvula',tube:'Tube / Pipe'};
+  const stColor={approved:'#2a7a2a',rejected:'#b83232',partial:'#b87a1a',draft:'#666'};
+  const stLabel={approved:t.approved,rejected:t.rejected,partial:t.partial,draft:t.draft};
+  const clColor={ok:'#2a7a2a',nok:'#b83232',obs:'#b87a1a',nd:'#999'};
+  const clLabel={ok:t.conform,nok:t.nonconform,obs:t.obs_item,nd:t.na};
+  const semColor={'✓':'#2a7a2a','✗':'#b83232','!':'#b87a1a','—':'#999'};
+
+  const picHTML=s.pic?`<img src="${s.pic}" class="rpt-insp-pic" alt="Inspector">`:
+    `<div style="width:52px;height:52px;border-radius:50%;background:#e8f5e8;border:2px solid #a0c8a0;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a8c4a" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>`;
+
+  const checkRows=(insp.checklist||[]).map(c=>`
+    <tr>
+      <td>${c.label}</td>
+      <td style="font-weight:700;color:${clColor[c.status]||'#999'}">${clLabel[c.status]||c.status}</td>
+    </tr>`).join('');
+
+  const cotaRows=(insp.cotas||[]).map(c=>`
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td style="text-align:center;font-family:monospace">${c.nominal||'—'}</td>
+      <td style="text-align:center;font-family:monospace">+${c.tolP||'0'} / ${c.tolN||'0'}</td>
+      <td style="text-align:center;font-family:monospace;font-weight:700">${c.medido||'—'}</td>
+      <td style="text-align:center">${c.unit||'mm'}</td>
+      <td style="text-align:center;font-weight:800;color:${semColor[c.status]||'#999'};font-size:13px">${c.status||'—'}</td>
+    </tr>`).join('');
+
+  const photoRows=(insp.photos||[]).map(p=>`
+    <div style="break-inside:avoid">
+      <img src="${p.data}" style="width:100%;border-radius:4px;border:1px solid #dde8dd;display:block">
+      <p style="font-size:9.5px;color:#777;margin-top:3px;font-style:italic">${p.caption||''}</p>
+    </div>`).join('');
+
+  return `<div class="rpt" id="rptNode">
+    <div class="rpt-header">
+      <div class="rpt-logo-block">
+        <div class="rpt-logo-name">⬡ InspectPro</div>
+        ${s.company?`<div class="rpt-company">${s.company}</div>`:''}
+        ${s.email?`<div class="rpt-company">${s.email}</div>`:''}
+        ${s.phone?`<div class="rpt-company">${s.phone}</div>`:''}
+      </div>
+      <div class="rpt-inspector-block">
+        ${picHTML}
+        <div class="rpt-insp-name">${s.name||L==='pt'?s.name||'Inspetor':'Inspector'}</div>
+        ${s.role?`<div class="rpt-insp-meta">${s.role}</div>`:''}
+        ${s.license?`<div class="rpt-insp-meta">${s.license}</div>`:''}
+        ${s.certs?`<div class="rpt-insp-meta" style="font-size:8.5px;color:#888">${s.certs}</div>`:''}
+      </div>
+    </div>
+
+    <div class="rpt-title-block">
+      <div class="rpt-title">${t.title}</div>
+      <div class="rpt-subtitle">ID: ${insp.id} · ${insp.date||'—'} · ${insp.location||'—'}</div>
+    </div>
+
+    <div class="rpt-sec-title">${t.ident}</div>
+    <table class="rpt-tbl">
+      <tr><th>${t.tag}</th><td><strong>${insp.tag||'—'}</strong></td><th>${t.desc}</th><td>${insp.name||'—'}</td></tr>
+      <tr><th>${t.serial}</th><td>${insp.serial||'—'}</td><th>${t.mat}</th><td>${insp.material||'—'}</td></tr>
+      <tr><th>${t.fab}</th><td>${insp.maker||'—'}</td><th>${t.type}</th><td>${typeL[insp.type]||insp.type||'—'}</td></tr>
+      <tr><th>${t.norm}</th><td>${insp.norm||'—'}</td><th>${t.date}</th><td>${insp.date||'—'}</td></tr>
+      <tr><th>${t.loc}</th><td>${insp.location||'—'}</td><th>${t.wo}</th><td>${insp.wo||'—'}</td></tr>
+      <tr><th>${t.client}</th><td colspan="3">${insp.client||'—'}</td></tr>
+    </table>
+
+    ${checkRows?`<div class="rpt-sec-title">${t.check}</div>
+    <table class="rpt-tbl"><thead><tr><th>${t.item}</th><th>${t.status}</th></tr></thead><tbody>${checkRows}</tbody></table>`:''}
+
+    ${cotaRows?`<div class="rpt-sec-title">${t.cotas}</div>
+    <table class="rpt-tbl"><thead><tr><th>${t.dim}</th><th>${t.nom}</th><th>${t.tol}</th><th>${t.med}</th><th>${t.unit}</th><th>Status</th></tr></thead><tbody>${cotaRows}</tbody></table>`:''}
+
+    ${photoRows?`<div class="rpt-sec-title">${t.photos}</div>
+    <div class="rpt-photos">${photoRows}</div>`:''}
+
+    <div class="rpt-sec-title">${t.verdict}</div>
+    <div class="rpt-verdict">
+      <span class="rpt-verdict-badge" style="background:${stColor[insp.status]||'#999'};color:#fff">${stLabel[insp.status]||insp.status||'—'}</span>
+      <div style="flex:1">
+        ${insp.obs?`<div style="margin-bottom:4px"><strong>${t.obs}:</strong> ${insp.obs}</div>`:''}
+        ${insp.action?`<div><strong>${t.action}:</strong> ${insp.action}</div>`:''}
+      </div>
+    </div>
+
+    ${insp.signature?`<div class="rpt-sec-title">${t.sig}</div>
+    <div class="rpt-sig"><img src="${insp.signature}"></div>
+    <div style="font-size:9.5px;color:#666;margin-top:4px">${s.name||''} ${s.license?'· '+s.license:''}</div>`:''}
+
+    <div class="rpt-footer">${t.footer} · ${new Date().toLocaleString(lg==='pt'?'pt-BR':'en-US')} · ID ${insp.id}</div>
+  </div>`;
+}
+
+async function downloadPDF(){
+  const insp=inspections.find(i=>i.id===rptInspId);
+  if(!insp) return;
+  const btn=event.target.closest('button');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> '+(L==='pt'?'Gerando...':'Generating...');
+  btn.disabled=true;
+  try {
+    const langs = rptLang==='both'?['pt','en']:[rptLang];
+    for(const lg of langs){
+      document.getElementById('rpt-content').innerHTML=genReportHTML(insp,lg);
+      await new Promise(r=>setTimeout(r,200));
+      const el=document.getElementById('rptNode');
+      if(!el) continue;
+      const canvas=await html2canvas(el,{scale:2.2,useCORS:true,backgroundColor:'#ffffff',logging:false});
+      const imgData=canvas.toDataURL('image/jpeg',.93);
+      const {jsPDF}=window.jspdf;
+      const pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+      const pW=pdf.internal.pageSize.getWidth();
+      const pH=pdf.internal.pageSize.getHeight();
+      const imgH=(canvas.height*pW)/canvas.width;
+      let y=0;
+      while(y<imgH){ if(y>0)pdf.addPage(); pdf.addImage(imgData,'JPEG',0,-y,pW,imgH); y+=pH; }
+      const fn=`InspectPro_${insp.tag||insp.id}_${insp.date||new Date().toISOString().split('T')[0]}_${lg.toUpperCase()}.pdf`;
+      pdf.save(fn);
+      await new Promise(r=>setTimeout(r,600));
+    }
+    // Restore preview
+    buildReportHTML(rptInspId, rptLang==='both'?'pt':rptLang);
+  }catch(err){ alert(L==='pt'?'Erro ao gerar PDF. Tente novamente.':'PDF generation error. Please try again.'); }
+  btn.innerHTML=orig; btn.disabled=false;
+}
+
+function shareWA(){
+  const insp=inspections.find(i=>i.id===rptInspId);
+  if(!insp) return;
+  const sl={approved:'✅ '+(L==='pt'?'Aprovado':'Approved'),rejected:'❌ '+(L==='pt'?'Reprovado':'Rejected'),partial:'⚠️ '+(L==='pt'?'Com Ressalvas':'Conditional'),draft:'📝 '+(L==='pt'?'Rascunho':'Draft')};
+  const txt=`*InspectPro — ${L==='pt'?'Relatório de Inspeção':'Inspection Report'}*\n\nTAG: ${insp.tag||'—'}\n${L==='pt'?'Equipamento':'Equipment'}: ${insp.name||'—'}\n${L==='pt'?'Data':'Date'}: ${insp.date||'—'}\n${L==='pt'?'Local':'Location'}: ${insp.location||'—'}\nStatus: ${sl[insp.status]||insp.status||'—'}\n\n${insp.obs?`_${insp.obs}_\n\n`:''}_InspectPro — ${setts.name||'Inspector'}_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt));
+}
+function shareEmail(){
+  const insp=inspections.find(i=>i.id===rptInspId);
+  if(!insp) return;
+  const sub=`InspectPro — ${L==='pt'?'Relatório':'Report'} ${insp.tag||''} — ${insp.date||''}`;
+  const body=`${L==='pt'?'Relatório de Inspeção de Qualidade':'Quality Inspection Report'}\n\nTAG: ${insp.tag||'—'}\n${L==='pt'?'Equipamento':'Equipment'}: ${insp.name||'—'}\nStatus: ${insp.status||'—'}\n\n${insp.obs||''}\n\n— InspectPro, ${setts.name||''}`;
+  window.open(`mailto:?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`);
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS / PROFILE
+// ═══════════════════════════════════════════
+function renderProfileUI(){
+  document.getElementById('s-name').value=setts.name||'';
+  document.getElementById('s-company').value=setts.company||'';
+  document.getElementById('s-license').value=setts.license||'';
+  document.getElementById('s-role').value=setts.role||'';
+  document.getElementById('s-email').value=setts.email||'';
+  document.getElementById('s-phone').value=setts.phone||'';
+  document.getElementById('s-certs').value=setts.certs||'';
+  if(setts.pic){
+    document.getElementById('profilePicImg').src=setts.pic;
+    document.getElementById('profilePicImg').style.display='block';
+    document.getElementById('profilePicIcon').style.display='none';
+    const rb=document.getElementById('removePicBtn');
+    if(rb) rb.style.display='flex';
+  }
+  document.getElementById('pp-name').textContent=setts.name||'Nome do Inspetor';
+  document.getElementById('pp-company').textContent=setts.company||'Empresa';
+}
+function saveSetts(){
+  setts.name=document.getElementById('s-name').value;
+  setts.company=document.getElementById('s-company').value;
+  setts.license=document.getElementById('s-license').value;
+  setts.role=document.getElementById('s-role').value;
+  setts.email=document.getElementById('s-email').value;
+  setts.phone=document.getElementById('s-phone').value;
+  setts.certs=document.getElementById('s-certs').value;
+  localStorage.setItem('iproSe',JSON.stringify(setts));
+  document.getElementById('pp-name').textContent=setts.name||'Nome do Inspetor';
+  document.getElementById('pp-company').textContent=setts.company||'Empresa';
+}
+function saveSettsManual(){
+  saveSetts();
+  // Visual feedback
+  const btn=document.querySelector('[onclick="saveSettsManual()"]');
+  const fb=document.getElementById('saveSettsFeedback');
+  if(btn){
+    const orig=btn.innerHTML;
+    btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>${L==='pt'?'Salvo!':'Saved!'}</span>`;
+    btn.style.background='var(--ok-c)';
+    setTimeout(()=>{ btn.innerHTML=orig; btn.style.background=''; },2000);
+  }
+  if(fb){ fb.style.display='block'; setTimeout(()=>fb.style.display='none',3000); }
+}
+function handleProfilePic(e){
+  const f=e.target.files[0]; if(!f) return;
+  if(f.size > 5*1024*1024){ alert('Arquivo muito grande. Máx 5 MB.'); return; }
+  const r=new FileReader();
+  r.onload=ev=>{
+    setts.pic=ev.target.result;
+    localStorage.setItem('iproSe',JSON.stringify(setts));
+    const img=document.getElementById('profilePicImg');
+    const ico=document.getElementById('profilePicIcon');
+    const removeBtn=document.getElementById('removePicBtn');
+    img.src=ev.target.result;
+    img.style.display='block';
+    ico.style.display='none';
+    if(removeBtn) removeBtn.style.display='flex';
+  };
+  r.readAsDataURL(f);
+  // reset so same file can be selected again
+  e.target.value='';
+}
+function removeProfilePic(){
+  if(!confirm('Remover foto de perfil?')) return;
+  setts.pic='';
+  localStorage.setItem('iproSe',JSON.stringify(setts));
+  const img=document.getElementById('profilePicImg');
+  const ico=document.getElementById('profilePicIcon');
+  const removeBtn=document.getElementById('removePicBtn');
+  img.src=''; img.style.display='none';
+  ico.style.display='block';
+  if(removeBtn) removeBtn.style.display='none';
+}
+// ═══════════════════════════════════════════
+// FAB & TOOLS
+// ═══════════════════════════════════════════
+let fabOpen = false;
+let activeTool = null;
+
+function toggleFab(){
+  fabOpen = !fabOpen;
+  const menu = document.getElementById('fabMenu');
+  const btn  = document.getElementById('fabMain');
+  menu.classList.toggle('open', fabOpen);
+  btn.classList.toggle('open', fabOpen);
+  if(fabOpen){
+    btn.style.background='var(--nok-c)';
+    btn.innerHTML=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  } else {
+    btn.style.background='var(--acc)';
+    btn.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`;
+  }
+}
+
+function openTool(name){
+  activeTool = name;
+  if(fabOpen) toggleFab();
+  document.getElementById('toolsModal').classList.add('open');
+  ['charts','npt','calc','conv'].forEach(p => {
+    document.getElementById('panel-'+p).style.display = p===name ? 'block' : 'none';
+  });
+  const titles = {
+    charts: L==='pt'?'📊 Gráficos de Desempenho':'📊 Performance Charts',
+    npt:    L==='pt'?'📐 Tabela NPT / API — Referência Técnica':'📐 NPT / API Reference Table',
+    calc:   L==='pt'?'🔢 Calculadora de Tolerâncias':'🔢 Tolerance Calculator',
+    conv:   L==='pt'?'⇄ Conversor — Polegadas ↔ Milímetros':'⇄ Converter — Inches ↔ Millimeters'
+  };
+  document.getElementById('toolsTitle').textContent = titles[name];
+  if(name==='charts') renderCharts();
+  if(name==='npt')    renderNPT();
+  if(name==='calc')   renderITTable();
+  if(name==='conv')   initConverter();
+}
+
+function closeTool(){
+  document.getElementById('toolsModal').classList.remove('open');
+}
+
+// ─── CHARTS ───────────────────────────────
+function renderCharts(){
+  if(!inspections.length){
+    document.getElementById('chart-empty').style.display='block';
+    ['chartDonut','chartBar','chartLine'].forEach(id=>{
+      const c=document.getElementById(id);
+      if(c){ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); }
+    });
+    return;
+  }
+  document.getElementById('chart-empty').style.display='none';
+  drawDonut();
+  drawBar();
+  drawLine();
+}
+
+function drawDonut(){
+  const c=document.getElementById('chartDonut');
+  const ctx=c.getContext('2d');
+  const ok=inspections.filter(i=>i.status==='approved').length;
+  const nok=inspections.filter(i=>i.status==='rejected').length;
+  const warn=inspections.filter(i=>i.status==='partial').length;
+  const draft=inspections.filter(i=>!i.status||i.status==='draft').length;
+  const total=inspections.length;
+  const data=[
+    {v:ok,   c:'#4a8c4a', l:L==='pt'?'Aprovado':'Approved'},
+    {v:nok,  c:'#c04444', l:L==='pt'?'Reprovado':'Rejected'},
+    {v:warn, c:'#c29428', l:L==='pt'?'Com Ressalvas':'Conditional'},
+    {v:draft,c:'#aaa',    l:L==='pt'?'Rascunho':'Draft'}
+  ].filter(d=>d.v>0);
+  const W=c.width, H=c.height, cx=W/2, cy=H/2, r=Math.min(W,H)/2-10, ir=r*0.55;
+  ctx.clearRect(0,0,W,H);
+  let start=-Math.PI/2;
+  data.forEach(d=>{
+    const angle=(d.v/total)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+angle);
+    ctx.closePath(); ctx.fillStyle=d.c; ctx.fill();
+    start+=angle;
+  });
+  // hole
+  ctx.beginPath(); ctx.arc(cx,cy,ir,0,Math.PI*2);
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--card')||'#fff'; ctx.fill();
+  // center text
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--tx1')||'#222';
+  ctx.font='bold 22px Barlow Condensed, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(total, cx, cy-6);
+  ctx.font='10px Barlow, sans-serif'; ctx.fillStyle='#888';
+  ctx.fillText(L==='pt'?'total':'total', cx, cy+10);
+  // legend
+  const leg=document.getElementById('chartLegend');
+  leg.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><span style="width:10px;height:10px;border-radius:50%;background:${d.c};flex-shrink:0;display:inline-block"></span><span style="font-size:.75rem;color:var(--tx2)">${d.l}</span><span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--tx3);margin-left:auto">${d.v} (${Math.round(d.v/total*100)}%)</span></div>`).join('');
+}
+
+function drawBar(){
+  const c=document.getElementById('chartBar');
+  const ctx=c.getContext('2d');
+  const types={npt:'NPT/API',flange:'Flange',valve:L==='pt'?'Válvula':'Valve',tube:L==='pt'?'Tubo':'Tube'};
+  const data=Object.keys(types).map(k=>({
+    label:types[k],
+    ok:inspections.filter(i=>i.type===k&&i.status==='approved').length,
+    nok:inspections.filter(i=>i.type===k&&i.status==='rejected').length,
+    warn:inspections.filter(i=>i.type===k&&i.status==='partial').length,
+    total:inspections.filter(i=>i.type===k).length
+  })).filter(d=>d.total>0);
+  if(!data.length) return;
+  const W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const pad={l:30,r:10,t:10,b:30};
+  const bw=Math.min(40,(W-pad.l-pad.r)/data.length/3-4);
+  const maxV=Math.max(...data.map(d=>d.total),1);
+  const gh=H-pad.t-pad.b;
+  const gw=W-pad.l-pad.r;
+  // grid lines
+  ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+gh-(i/4*gh);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    ctx.fillStyle='#aaa'; ctx.font='9px Barlow'; ctx.textAlign='right';
+    ctx.fillText(Math.round(i/4*maxV), pad.l-3, y+3);
+  }
+  data.forEach((d,i)=>{
+    const x=pad.l+(i+.5)*(gw/data.length);
+    const bars=[{v:d.ok,c:'#4a8c4a'},{v:d.warn,c:'#c29428'},{v:d.nok,c:'#c04444'}];
+    let bx=x-bw*1.5;
+    bars.forEach(b=>{
+      if(b.v>0){
+        const bh=(b.v/maxV)*gh;
+        ctx.fillStyle=b.c; ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(bx,pad.t+gh-bh,bw,bh,2) : ctx.rect(bx,pad.t+gh-bh,bw,bh);
+        ctx.fill();
+        if(b.v>0){ ctx.fillStyle='#fff'; ctx.font='bold 9px Barlow'; ctx.textAlign='center'; ctx.fillText(b.v,bx+bw/2,pad.t+gh-bh+10); }
+      }
+      bx+=bw+2;
+    });
+    ctx.fillStyle='#666'; ctx.font='9px Barlow Condensed'; ctx.textAlign='center';
+    ctx.fillText(d.label, x, H-pad.b+12);
+  });
+}
+
+function drawLine(){
+  const c=document.getElementById('chartLine');
+  const ctx=c.getContext('2d');
+  const W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+  // group by month
+  const months={};
+  inspections.forEach(i=>{
+    if(!i.date) return;
+    const m=i.date.substring(0,7);
+    if(!months[m]) months[m]={total:0,ok:0};
+    months[m].total++;
+    if(i.status==='approved') months[m].ok++;
+  });
+  const keys=Object.keys(months).sort().slice(-12);
+  if(keys.length<2) return;
+  const pad={l:28,r:10,t:10,b:28};
+  const gh=H-pad.t-pad.b, gw=W-pad.l-pad.r;
+  const maxV=Math.max(...keys.map(k=>months[k].total),1);
+  // grid
+  ctx.strokeStyle='#e8e8e8'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+gh-(i/4*gh);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    ctx.fillStyle='#aaa'; ctx.font='9px Barlow'; ctx.textAlign='right';
+    ctx.fillText(Math.round(i/4*maxV),pad.l-3,y+3);
+  }
+  const pts=keys.map((k,i)=>({
+    x:pad.l+i*(gw/(keys.length-1)),
+    yTotal:pad.t+gh-(months[k].total/maxV)*gh,
+    yOk:pad.t+gh-(months[k].ok/maxV)*gh,
+    label:k.substring(5)+'/'+k.substring(2,4)
+  }));
+  // total line
+  ctx.strokeStyle='#4a8c4a'; ctx.lineWidth=2.5; ctx.lineJoin='round';
+  ctx.beginPath(); pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.yTotal):ctx.lineTo(p.x,p.yTotal)); ctx.stroke();
+  // ok line
+  ctx.strokeStyle='#62b062'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.yOk):ctx.lineTo(p.x,p.yOk)); ctx.stroke();
+  ctx.setLineDash([]);
+  // dots & labels
+  pts.forEach(p=>{
+    ctx.beginPath(); ctx.arc(p.x,p.yTotal,4,0,Math.PI*2); ctx.fillStyle='#4a8c4a'; ctx.fill();
+    ctx.fillStyle='#555'; ctx.font='8px Barlow'; ctx.textAlign='center';
+    ctx.fillText(p.label, p.x, H-pad.b+10);
+  });
+}
+
+// ─── NPT TABLE ────────────────────────────
+const NPT_DATA=[
+  {size:'1/16',tpi:27,od:7.938,pitch:.941,extEngage:6.5,intEngage:4.1,type:'NPT'},
+  {size:'1/8', tpi:27,od:10.287,pitch:.941,extEngage:6.8,intEngage:4.4,type:'NPT'},
+  {size:'1/4', tpi:18,od:13.716,pitch:1.411,extEngage:9.0,intEngage:5.8,type:'NPT'},
+  {size:'3/8', tpi:18,od:17.145,pitch:1.411,extEngage:9.5,intEngage:6.1,type:'NPT'},
+  {size:'1/2', tpi:14,od:21.336,pitch:1.814,extEngage:12.7,intEngage:8.1,type:'NPT'},
+  {size:'3/4', tpi:14,od:26.670,pitch:1.814,extEngage:13.6,intEngage:8.7,type:'NPT'},
+  {size:'1"',  tpi:11.5,od:33.401,pitch:2.209,extEngage:17.3,intEngage:10.9,type:'NPT'},
+  {size:'1¼"', tpi:11.5,od:42.164,pitch:2.209,extEngage:17.9,intEngage:11.4,type:'NPT'},
+  {size:'1½"', tpi:11.5,od:48.260,pitch:2.209,extEngage:18.4,intEngage:11.7,type:'NPT'},
+  {size:'2"',  tpi:11.5,od:60.325,pitch:2.209,extEngage:19.2,intEngage:12.3,type:'NPT'},
+  {size:'2½"', tpi:8,  od:73.025,pitch:3.175,extEngage:28.9,intEngage:17.5,type:'NPT'},
+  {size:'3"',  tpi:8,  od:88.900,pitch:3.175,extEngage:30.5,intEngage:18.4,type:'NPT'},
+  {size:'3½"', tpi:8,  od:101.600,pitch:3.175,extEngage:31.8,intEngage:19.0,type:'NPT'},
+  {size:'4"',  tpi:8,  od:114.300,pitch:3.175,extEngage:33.0,intEngage:19.9,type:'NPT'},
+  {size:'5"',  tpi:8,  od:141.300,pitch:3.175,extEngage:35.8,intEngage:21.6,type:'NPT'},
+  {size:'6"',  tpi:8,  od:168.275,pitch:3.175,extEngage:38.6,intEngage:23.4,type:'NPT'},
+  {size:'8"',  tpi:8,  od:219.075,pitch:3.175,extEngage:43.2,intEngage:26.2,type:'NPT'},
+  {size:'10"', tpi:8,  od:273.050,pitch:3.175,extEngage:48.0,intEngage:29.4,type:'NPT'},
+  {size:'12"', tpi:8,  od:323.850,pitch:3.175,extEngage:52.4,intEngage:31.9,type:'NPT'},
+  // API Line Pipe
+  {size:'1/8"',tpi:27,od:10.287,pitch:.941,extEngage:6.8,intEngage:4.4,type:'API'},
+  {size:'1/4"',tpi:18,od:13.716,pitch:1.411,extEngage:9.0,intEngage:5.8,type:'API'},
+  {size:'3/8"',tpi:18,od:17.145,pitch:1.411,extEngage:9.5,intEngage:6.1,type:'API'},
+  {size:'1/2"',tpi:14,od:21.336,pitch:1.814,extEngage:12.7,intEngage:8.1,type:'API'},
+  {size:'3/4"',tpi:14,od:26.670,pitch:1.814,extEngage:13.6,intEngage:8.7,type:'API'},
+  {size:'1"',  tpi:11.5,od:33.401,pitch:2.209,extEngage:17.3,intEngage:10.9,type:'API'},
+  {size:'2"',  tpi:11.5,od:60.325,pitch:2.209,extEngage:19.2,intEngage:12.3,type:'API'},
+  {size:'3"',  tpi:8,od:88.900,pitch:3.175,extEngage:30.5,intEngage:18.4,type:'API'},
+  {size:'4"',  tpi:8,od:114.300,pitch:3.175,extEngage:33.0,intEngage:19.9,type:'API'},
+  {size:'6"',  tpi:8,od:168.275,pitch:3.175,extEngage:38.6,intEngage:23.4,type:'API'},
+  {size:'8"',  tpi:8,od:219.075,pitch:3.175,extEngage:43.2,intEngage:26.2,type:'API'},
+];
+
+function renderNPT(filter='',type='all'){
+  const body=document.getElementById('nptBody');
+  let data=NPT_DATA;
+  if(type==='npt') data=data.filter(d=>d.type==='NPT');
+  if(type==='api') data=data.filter(d=>d.type==='API');
+  if(filter) data=data.filter(d=>d.size.toLowerCase().includes(filter.toLowerCase()));
+  body.innerHTML=data.map(d=>`
+    <tr class="npt-row">
+      <td>${d.size}</td>
+      <td style="text-align:center">${d.tpi}</td>
+      <td style="text-align:center">${d.od.toFixed(3)}</td>
+      <td style="text-align:center">${d.pitch.toFixed(3)}</td>
+      <td style="text-align:center">${d.extEngage.toFixed(1)}</td>
+      <td style="text-align:center">${d.intEngage.toFixed(1)}</td>
+      <td style="text-align:center"><span class="npt-type-badge" style="${d.type==='NPT'?'background:var(--acc-bg);color:var(--acc)':'background:var(--warn-bg);color:var(--warn-c)'}">${d.type}</span></td>
+    </tr>`).join('');
+}
+function filterNPT(){
+  renderNPT(document.getElementById('nptFilter').value, document.getElementById('nptType').value);
+}
+
+// ─── TOLERANCE CALCULATOR ────────────────
+// ISO fundamental tolerances (IT grades) in µm by nominal size range
+const IT_TABLE=[
+  {min:0,  max:3,   it6:6,  it7:10, it8:14, it9:25},
+  {min:3,  max:6,   it6:8,  it7:12, it8:18, it9:30},
+  {min:6,  max:10,  it6:9,  it7:15, it8:22, it9:36},
+  {min:10, max:18,  it6:11, it7:18, it8:27, it9:43},
+  {min:18, max:30,  it6:13, it7:21, it8:33, it9:52},
+  {min:30, max:50,  it6:16, it7:25, it8:39, it9:62},
+  {min:50, max:80,  it6:19, it7:30, it8:46, it9:74},
+  {min:80, max:120, it6:22, it7:35, it8:54, it9:87},
+  {min:120,max:180, it6:25, it7:40, it8:63, it9:100},
+  {min:180,max:250, it6:29, it7:46, it8:72, it9:115},
+  {min:250,max:315, it6:32, it7:52, it8:81, it9:130},
+  {min:315,max:400, it6:36, it7:57, it8:89, it9:140},
+  {min:400,max:500, it6:40, it7:63, it8:97, it9:155},
+];
+
+// Fundamental deviations (µm) for common fits
+const FITS={
+  iso_h7: (n,it)=>({upper:+it.it7/1000,lower:0,name:'H7 (furo base)'}),
+  iso_h8: (n,it)=>({upper:+it.it8/1000,lower:0,name:'H8 (furo base)'}),
+  iso_h9: (n,it)=>({upper:+it.it9/1000,lower:0,name:'H9 (furo base)'}),
+  iso_f7: (n,it)=>({upper:-(5.5*Math.pow(n,.41))/1000,lower:-(5.5*Math.pow(n,.41)+it.it7)/1000,name:'f7 (eixo)'}),
+  iso_g6: (n,it)=>({upper:-(2.5*Math.pow(n,.34))/1000,lower:-(2.5*Math.pow(n,.34)+it.it6)/1000,name:'g6 (eixo)'}),
+  iso_js6:(n,it)=>({upper:+(it.it6/2)/1000,lower:-(it.it6/2)/1000,name:'js6 (eixo)'}),
+  iso_k6: (n,it)=>({upper:+(0.6*Math.pow(n,1/3)+it.it6-it.it5)/1000,lower:+(0.6*Math.pow(n,1/3))/1000,name:'k6 (eixo)'}),
+  asme_rc3:(n)=>({upper:0,lower:-0.015,name:'ASME RC3'}),
+  asme_lc4:(n)=>({upper:+0.025,lower:0,name:'ASME LC4'}),
+  asme_fn2:(n)=>({upper:+0.030,lower:+0.015,name:'ASME FN2'}),
+};
+
+function getIT(nom){
+  return IT_TABLE.find(r=>nom>r.min&&nom<=r.max)||IT_TABLE[0];
+}
+
+function calcTol(){
+  const nom=parseFloat(document.getElementById('calcNom').value);
+  const norm=document.getElementById('calcNorm').value;
+  const med=parseFloat(document.getElementById('calcMed').value);
+  const unit=document.getElementById('calcUnit').value;
+  // show/hide custom row
+  document.getElementById('calcCustomRow').style.display=norm==='custom'?'grid':'none';
+  if(isNaN(nom)||nom<=0){ document.getElementById('calcOut').innerHTML='<span style="color:var(--tx3);font-size:.85rem">Informe a dimensão nominal</span>'; clearCalcCanvas(); return; }
+  let upper,lower,fitName;
+  if(norm==='custom'){
+    upper=parseFloat(document.getElementById('calcManP').value)||0;
+    lower=parseFloat(document.getElementById('calcManN').value)||0;
+    fitName='Manual';
+  } else {
+    const it=getIT(nom);
+    const fn=FITS[norm];
+    if(!fn){ return; }
+    const r=fn(nom,it);
+    upper=parseFloat(r.upper.toFixed(4));
+    lower=parseFloat(r.lower.toFixed(4));
+    fitName=r.name;
+  }
+  const maxLim=nom+upper;
+  const minLim=nom+lower;
+  const tol=Math.abs(upper-lower);
+  let verdict='', vColor='', vIcon='';
+  if(!isNaN(med)){
+    if(med>=minLim&&med<=maxLim){ verdict=L==='pt'?'CONFORME':'CONFORMING'; vColor='var(--ok-c)'; vIcon='✓'; }
+    else{ verdict=L==='pt'?'NÃO CONFORME':'NON-CONFORMING'; vColor='var(--nok-c)'; vIcon='✗'; }
+  }
+  const u=unit==='mm'?'mm':unit;
+  document.getElementById('calcOut').innerHTML=`
+    <div style="margin-bottom:10px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:4px">${fitName}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:10px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--ok-c)">${upper>=0?'+':''}${upper.toFixed(4)}</div>
+        <div style="font-size:.68rem;color:var(--tx3);margin-top:2px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em">Tol. Superior</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:10px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--nok-c)">${lower>=0?'+':''}${lower.toFixed(4)}</div>
+        <div style="font-size:.68rem;color:var(--tx3);margin-top:2px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em">Tol. Inferior</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:10px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--tx1)">${maxLim.toFixed(4)}</div>
+        <div style="font-size:.68rem;color:var(--tx3);margin-top:2px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em">Lim. Max (${u})</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:10px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--tx1)">${minLim.toFixed(4)}</div>
+        <div style="font-size:.68rem;color:var(--tx3);margin-top:2px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em">Lim. Min (${u})</div>
+      </div>
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--r2);padding:8px;text-align:center;margin-bottom:${vIcon?'10px':'0'}">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--tx2)">IT = ${tol.toFixed(4)} ${u}</span>
+    </div>
+    ${vIcon?`<div style="border-radius:var(--r2);padding:12px;text-align:center;background:${vColor}18;border:2px solid ${vColor}">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;color:${vColor}">${vIcon} ${verdict}</span>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:${vColor};opacity:.8;margin-top:3px">
+        medido: ${med.toFixed(4)} ${u} | desvio: ${(med-nom>=0?'+':'')+(med-nom).toFixed(4)} ${u}
+      </div>
+    </div>`:''}`;
+  drawCalcCanvas(nom,upper,lower,isNaN(med)?null:med);
+}
+
+function clearCalcCanvas(){
+  const c=document.getElementById('calcCanvas');
+  if(c){ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); }
+}
+
+function drawCalcCanvas(nom,upper,lower,med){
+  const c=document.getElementById('calcCanvas');
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=20, bw=20, cx=W/2;
+  const tol=Math.abs(upper-lower)||0.001;
+  const range=tol*3;
+  const y2pct=(v)=>pad+(1-((v-lower+tol*0.5)/range))*( H-pad*2);
+  // Nominal line
+  const yNom=y2pct(0);
+  ctx.strokeStyle='#bbb'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(pad,yNom); ctx.lineTo(W-pad,yNom); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#999'; ctx.font='9px Barlow'; ctx.textAlign='left';
+  ctx.fillText('nominal',pad+2,yNom-3);
+  // Tolerance zone
+  const yUpper=y2pct(upper), yLower=y2pct(lower);
+  ctx.fillStyle='rgba(74,140,74,.15)';
+  ctx.fillRect(cx-bw*2,yUpper,bw*4,yLower-yUpper);
+  ctx.strokeStyle='#4a8c4a'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(cx-bw*2,yUpper); ctx.lineTo(cx+bw*2,yUpper); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-bw*2,yLower); ctx.lineTo(cx+bw*2,yLower); ctx.stroke();
+  ctx.fillStyle='#4a8c4a'; ctx.font='bold 8px JetBrains Mono'; ctx.textAlign='right';
+  ctx.fillText((upper>=0?'+':'')+upper.toFixed(3), cx-bw*2-3, yUpper+4);
+  ctx.fillText((lower>=0?'+':'')+lower.toFixed(3), cx-bw*2-3, yLower+4);
+  // Measured point
+  if(med!==null){
+    const yMed=y2pct(med-nom);
+    const inZone=med-nom>=lower&&med-nom<=upper;
+    ctx.beginPath(); ctx.arc(cx,yMed,6,0,Math.PI*2);
+    ctx.fillStyle=inZone?'#4a8c4a':'#c04444'; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 8px Barlow'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(inZone?'✓':'✗',cx,yMed);
+    ctx.fillStyle=inZone?'#4a8c4a':'#c04444'; ctx.font='bold 9px JetBrains Mono'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillText(med.toFixed(3),cx+bw*2+4,yMed+4);
+  }
+}
+
+function renderITTable(){
+  const body=document.getElementById('itTable');
+  body.innerHTML=IT_TABLE.map(r=>`<tr>
+    <td style="padding:4px 8px;border:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:.75rem">> ${r.min} – ${r.max}</td>
+    <td style="padding:4px 8px;border:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.75rem">${r.it6} µm</td>
+    <td style="padding:4px 8px;border:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.75rem">${r.it7} µm</td>
+    <td style="padding:4px 8px;border:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.75rem">${r.it8} µm</td>
+    <td style="padding:4px 8px;border:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.75rem">${r.it9} µm</td>
+  </tr>`).join('');
+}
+
+// ─── UNIT CONVERTER ──────────────────────
+const FRACTIONS=[
+  {l:'1/64"',v:1/64},{l:'1/32"',v:1/32},{l:'3/64"',v:3/64},{l:'1/16"',v:1/16},
+  {l:'5/64"',v:5/64},{l:'3/32"',v:3/32},{l:'7/64"',v:7/64},{l:'1/8"', v:1/8},
+  {l:'9/64"',v:9/64},{l:'5/32"',v:5/32},{l:'11/64"',v:11/64},{l:'3/16"',v:3/16},
+  {l:'13/64"',v:13/64},{l:'7/32"',v:7/32},{l:'15/64"',v:15/64},{l:'1/4"', v:1/4},
+  {l:'17/64"',v:17/64},{l:'9/32"',v:9/32},{l:'19/64"',v:19/64},{l:'5/16"',v:5/16},
+  {l:'21/64"',v:21/64},{l:'11/32"',v:11/32},{l:'23/64"',v:23/64},{l:'3/8"', v:3/8},
+  {l:'25/64"',v:25/64},{l:'13/32"',v:13/32},{l:'27/64"',v:27/64},{l:'7/16"',v:7/16},
+  {l:'29/64"',v:29/64},{l:'15/32"',v:15/32},{l:'31/64"',v:31/64},{l:'1/2"', v:1/2},
+  {l:'33/64"',v:33/64},{l:'17/32"',v:17/32},{l:'35/64"',v:35/64},{l:'9/16"',v:9/16},
+  {l:'37/64"',v:37/64},{l:'19/32"',v:19/32},{l:'39/64"',v:39/64},{l:'5/8"', v:5/8},
+  {l:'41/64"',v:41/64},{l:'21/32"',v:21/32},{l:'43/64"',v:43/64},{l:'11/16"',v:11/16},
+  {l:'45/64"',v:45/64},{l:'23/32"',v:23/32},{l:'47/64"',v:47/64},{l:'3/4"', v:3/4},
+  {l:'49/64"',v:49/64},{l:'25/32"',v:25/32},{l:'51/64"',v:51/64},{l:'13/16"',v:13/16},
+  {l:'53/64"',v:53/64},{l:'27/32"',v:27/32},{l:'55/64"',v:55/64},{l:'7/8"', v:7/8},
+  {l:'57/64"',v:57/64},{l:'29/32"',v:29/32},{l:'59/64"',v:59/64},{l:'15/16"',v:15/16},
+  {l:'61/64"',v:61/64},{l:'31/32"',v:31/32},{l:'63/64"',v:63/64},{l:'1"',   v:1}
+];
+const FRAC_CHIPS=[
+  {l:'1/16"',v:1/16},{l:'1/8"',v:1/8},{l:'3/16"',v:3/16},{l:'1/4"',v:1/4},
+  {l:'5/16"',v:5/16},{l:'3/8"',v:3/8},{l:'7/16"',v:7/16},{l:'1/2"',v:1/2},
+  {l:'9/16"',v:9/16},{l:'5/8"',v:5/8},{l:'3/4"',v:3/4},{l:'7/8"',v:7/8},{l:'1"',v:1}
+];
+const NPS_DATA=[
+  {n:'1/8"',i:0.405,m:10.287},{n:'1/4"',i:0.540,m:13.716},{n:'3/8"',i:0.675,m:17.145},
+  {n:'1/2"',i:0.840,m:21.336},{n:'3/4"',i:1.050,m:26.670},{n:'1"',i:1.315,m:33.401},
+  {n:'1¼"',i:1.660,m:42.164},{n:'1½"',i:1.900,m:48.260},{n:'2"',i:2.375,m:60.325},
+  {n:'2½"',i:2.875,m:73.025},{n:'3"',i:3.500,m:88.900},{n:'3½"',i:4.000,m:101.600},
+  {n:'4"',i:4.500,m:114.300},{n:'5"',i:5.563,m:141.300},{n:'6"',i:6.625,m:168.275},
+  {n:'8"',i:8.625,m:219.075},{n:'10"',i:10.750,m:273.050},{n:'12"',i:12.750,m:323.850},
+  {n:'14"',i:14.000,m:355.600},{n:'16"',i:16.000,m:406.400},{n:'18"',i:18.000,m:457.200},
+  {n:'20"',i:20.000,m:508.000},{n:'24"',i:24.000,m:609.600}
+];
+
+function initConverter(){
+  const fb=document.getElementById('fracBtns');
+  if(fb&&!fb.children.length){
+    fb.innerHTML=FRAC_CHIPS.map(f=>`<button onclick="useFrac(${f.v})" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;padding:5px 9px;border-radius:var(--r1);border:1px solid var(--acc-ln);background:var(--acc-bg);color:var(--acc);cursor:pointer;transition:all .15s;" onmouseover="this.style.background='var(--acc)';this.style.color='#fff'" onmouseout="this.style.background='var(--acc-bg)';this.style.color='var(--acc)'">${f.l}</button>`).join('');
+  }
+  const ct=document.getElementById('convTable');
+  if(ct&&!ct.children.length){
+    ct.innerHTML=FRACTIONS.map((f,i)=>`<tr onclick="useFrac(${f.v})" style="cursor:pointer;${i%2===0?'background:var(--bg2)':''}" onmouseover="this.style.background='var(--acc-bg)'" onmouseout="this.style.background='${i%2===0?'var(--bg2)':''}'">`+
+      `<td style="padding:5px 10px;border-bottom:1px solid var(--line);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.92rem">${f.l}</td>`+
+      `<td style="padding:5px 10px;border-bottom:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.78rem">${f.v.toFixed(5)}</td>`+
+      `<td style="padding:5px 10px;border-bottom:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:var(--acc)">${(f.v*25.4).toFixed(4)}</td>`+
+      `</tr>`).join('');
+  }
+  const nt=document.getElementById('npsTable');
+  if(nt&&!nt.children.length){
+    nt.innerHTML=NPS_DATA.map((d,i)=>`<tr style="${i%2?'background:var(--bg3)':''}">`+
+      `<td style="padding:5px 10px;border:1px solid var(--line);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.92rem">${d.n}</td>`+
+      `<td style="padding:5px 10px;border:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.78rem">${d.i.toFixed(3)}"</td>`+
+      `<td style="padding:5px 10px;border:1px solid var(--line);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:var(--acc)">${d.m.toFixed(3)} mm</td>`+
+      `</tr>`).join('');
+  }
+}
+
+function convFromIn(){
+  const v=parseFloat(document.getElementById('cv-in').value);
+  if(isNaN(v)){document.getElementById('cv-mm-out').value='';return;}
+  document.getElementById('cv-mm-out').value=(v*25.4).toFixed(4);
+}
+
+function convFromMm(){
+  const v=parseFloat(document.getElementById('cv-mm').value);
+  const lbl=document.getElementById('cv-fraction-label');
+  if(isNaN(v)){document.getElementById('cv-in-out').value='';lbl.textContent='';return;}
+  const inch=v/25.4;
+  document.getElementById('cv-in-out').value=inch.toFixed(6);
+  let near=FRACTIONS[0],minD=Infinity;
+  FRACTIONS.forEach(f=>{const d=Math.abs(f.v-inch);if(d<minD){minD=d;near=f;}});
+  const pct=(minD/inch)*100;
+  lbl.innerHTML=pct<0.5
+    ?`<span style="color:var(--ok-c);font-weight:600">≈ ${near.l}</span> <span style="color:var(--tx3)">(erro: ${(minD*25.4).toFixed(4)} mm)</span>`
+    :`<span style="color:var(--tx3)">Fração mais próxima: </span><span style="color:var(--warn-c);font-weight:600">${near.l}</span><span style="color:var(--tx3)"> = ${(near.v*25.4).toFixed(3)} mm</span>`;
+}
+
+function useFrac(v){
+  document.getElementById('cv-in').value=v.toFixed(6);
+  convFromIn();
+}
+
+function copyVal(id){
+  const el=document.getElementById(id);
+  if(!el||!el.value) return;
+  navigator.clipboard.writeText(el.value).then(()=>{
+    const orig=el.style.background;
+    el.style.background='rgba(74,140,74,.25)';
+    setTimeout(()=>{el.style.background=orig;},700);
+  }).catch(()=>{el.select();document.execCommand('copy');});
+}
+</script>
+</body>
+</html>
