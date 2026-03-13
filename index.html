@@ -1045,16 +1045,16 @@ input[type=file] { display:none; }
 .field-locked {
   background:var(--bg3) !important;
   color:var(--tx2) !important;
-  cursor:default !important;
   border-color:transparent !important;
-  pointer-events:none;
+  cursor:default !important;
+  user-select:none;
+  -webkit-user-select:none;
 }
 .field-editing {
   background:var(--inp) !important;
   color:var(--tx1) !important;
-  cursor:text !important;
   border-color:var(--line2) !important;
-  pointer-events:all;
+  cursor:text !important;
 }
 #profileCard.editing { border:2px solid var(--acc-ln); }
 
@@ -1427,13 +1427,13 @@ input[type=file] { display:none; }
       </div>
 
       <div class="form-grid form-grid-2" id="profileFields">
-        <div class="form-field"><label data-pt="Nome Completo" data-en="Full Name">Nome Completo</label><input type="text" id="s-name" placeholder="Eng. João da Silva" readonly class="field-locked"></div>
-        <div class="form-field"><label data-pt="Empresa / Contratante" data-en="Company / Contractor">Empresa / Contratante</label><input type="text" id="s-company" placeholder="IndustrialTech Ltda." readonly class="field-locked"></div>
-        <div class="form-field"><label data-pt="CREA / Matrícula / ID" data-en="License / ID Number">CREA / Matrícula / ID</label><input type="text" id="s-license" placeholder="CREA 123456-D/SP" readonly class="field-locked"></div>
-        <div class="form-field"><label data-pt="Cargo / Função" data-en="Role / Title">Cargo / Função</label><input type="text" id="s-role" placeholder="Inspetor de Qualidade Nível II" readonly class="field-locked"></div>
-        <div class="form-field"><label data-pt="E-mail" data-en="E-mail">E-mail</label><input type="email" id="s-email" placeholder="inspetor@empresa.com" readonly class="field-locked"></div>
-        <div class="form-field"><label data-pt="Telefone / WhatsApp" data-en="Phone / WhatsApp">Telefone / WhatsApp</label><input type="tel" id="s-phone" placeholder="+55 11 99999-9999" readonly class="field-locked"></div>
-        <div class="form-field" style="grid-column:1/-1"><label data-pt="Certificações / Qualificações" data-en="Certifications / Qualifications">Certificações / Qualificações</label><input type="text" id="s-certs" placeholder="ex: ABENDI N1, ASNT Level II, ISO 9001" readonly class="field-locked"></div>
+        <div class="form-field"><label data-pt="Nome Completo" data-en="Full Name">Nome Completo</label><input type="text" id="s-name" placeholder="Eng. João da Silva" disabled></div>
+        <div class="form-field"><label data-pt="Empresa / Contratante" data-en="Company / Contractor">Empresa / Contratante</label><input type="text" id="s-company" placeholder="IndustrialTech Ltda." disabled></div>
+        <div class="form-field"><label data-pt="CREA / Matrícula / ID" data-en="License / ID Number">CREA / Matrícula / ID</label><input type="text" id="s-license" placeholder="CREA 123456-D/SP" disabled></div>
+        <div class="form-field"><label data-pt="Cargo / Função" data-en="Role / Title">Cargo / Função</label><input type="text" id="s-role" placeholder="Inspetor de Qualidade Nível II" disabled></div>
+        <div class="form-field"><label data-pt="E-mail" data-en="E-mail">E-mail</label><input type="email" id="s-email" placeholder="inspetor@empresa.com" disabled></div>
+        <div class="form-field"><label data-pt="Telefone / WhatsApp" data-en="Phone / WhatsApp">Telefone / WhatsApp</label><input type="tel" id="s-phone" placeholder="+55 11 99999-9999" disabled></div>
+        <div class="form-field" style="grid-column:1/-1"><label data-pt="Certificações / Qualificações" data-en="Certifications / Qualifications">Certificações / Qualificações</label><input type="text" id="s-certs" placeholder="ex: ABENDI N1, ASNT Level II, ISO 9001" disabled></div>
       </div>
     </div>
 
@@ -2489,18 +2489,30 @@ function renderProfileUI(){
   }
   document.getElementById('pp-name').textContent=setts.name||'Nome do Inspetor';
   document.getElementById('pp-company').textContent=setts.company||'Empresa';
+  // Always start in view (locked) mode
+  setProfileEditMode(false);
 }
 function saveSetts(){
-  setts.name=document.getElementById('s-name').value;
-  setts.company=document.getElementById('s-company').value;
-  setts.license=document.getElementById('s-license').value;
-  setts.role=document.getElementById('s-role').value;
-  setts.email=document.getElementById('s-email').value;
-  setts.phone=document.getElementById('s-phone').value;
-  setts.certs=document.getElementById('s-certs').value;
+  // Read values while fields may still be enabled
+  const n = document.getElementById('s-name');
+  const c = document.getElementById('s-company');
+  const l = document.getElementById('s-license');
+  const r = document.getElementById('s-role');
+  const e = document.getElementById('s-email');
+  const p = document.getElementById('s-phone');
+  const q = document.getElementById('s-certs');
+  // Temporarily enable disabled fields to read value
+  [n,c,l,r,e,p,q].forEach(f=>{ if(f) f.disabled=false; });
+  setts.name    = n ? n.value : '';
+  setts.company = c ? c.value : '';
+  setts.license = l ? l.value : '';
+  setts.role    = r ? r.value : '';
+  setts.email   = e ? e.value : '';
+  setts.phone   = p ? p.value : '';
+  setts.certs   = q ? q.value : '';
   localStorage.setItem('iproSe',JSON.stringify(setts));
-  document.getElementById('pp-name').textContent=setts.name||'Nome do Inspetor';
-  document.getElementById('pp-company').textContent=setts.company||'Empresa';
+  if(document.getElementById('pp-name')) document.getElementById('pp-name').textContent=setts.name||'Nome do Inspetor';
+  if(document.getElementById('pp-company')) document.getElementById('pp-company').textContent=setts.company||'Empresa';
 }
 
 let _settsBak = {};
@@ -2519,22 +2531,32 @@ function toggleProfileEdit(){
 }
 
 function setProfileEditMode(editing){
-  const fields = document.querySelectorAll('#profileFields input');
+  const ids = ['s-name','s-company','s-license','s-role','s-email','s-phone','s-certs'];
+  ids.forEach(id => {
+    const f = document.getElementById(id);
+    if(!f) return;
+    if(editing){
+      f.disabled = false;
+      f.style.background = '';
+      f.style.color = '';
+      f.style.borderColor = '';
+      f.style.cursor = 'text';
+    } else {
+      f.disabled = true;
+      f.style.background = 'var(--bg3)';
+      f.style.color = 'var(--tx2)';
+      f.style.borderColor = 'transparent';
+      f.style.cursor = 'default';
+    }
+  });
   const actions = document.getElementById('profileActions');
   const btn = document.getElementById('editProfileBtn');
   const card = document.getElementById('profileCard');
-  fields.forEach(f => {
-    f.readOnly = !editing;
-    f.classList.toggle('field-locked', !editing);
-    f.classList.toggle('field-editing', editing);
-  });
-  actions.style.display = editing ? 'flex' : 'none';
-  card.classList.toggle('editing', editing);
-  btn.style.display = editing ? 'none' : 'flex';
+  if(actions) actions.style.display = editing ? 'flex' : 'none';
+  if(card) card.classList.toggle('editing', editing);
+  if(btn) btn.style.display = editing ? 'none' : 'flex';
   if(editing){
-    // Focus first empty or first field
-    const first = document.getElementById('s-name');
-    setTimeout(()=>first.focus(),100);
+    setTimeout(()=>{ const f=document.getElementById('s-name'); if(f){ f.focus(); f.select(); } },150);
   }
 }
 
@@ -2550,10 +2572,22 @@ function cancelProfileEdit(){
   setProfileEditMode(false);
 }
 function saveSettsManual(){
-  saveSetts();
+  // Read values directly while fields are still enabled
+  const ids = ['s-name','s-company','s-license','s-role','s-email','s-phone','s-certs'];
+  const keys = ['name','company','license','role','email','phone','certs'];
+  ids.forEach((id,i) => {
+    const f = document.getElementById(id);
+    if(f){ f.disabled = false; setts[keys[i]] = f.value; }
+  });
+  localStorage.setItem('iproSe', JSON.stringify(setts));
+  const pn = document.getElementById('pp-name');
+  const pc = document.getElementById('pp-company');
+  if(pn) pn.textContent = setts.name || 'Nome do Inspetor';
+  if(pc) pc.textContent = setts.company || 'Empresa';
+  // Now lock fields
   setProfileEditMode(false);
-  const fb=document.getElementById('saveSettsFeedback');
-  if(fb){ fb.style.display='block'; setTimeout(()=>fb.style.display='none',3000); }
+  const fb = document.getElementById('saveSettsFeedback');
+  if(fb){ fb.style.display='block'; setTimeout(()=>fb.style.display='none', 3000); }
 }
 function handleProfilePic(e){
   const f=e.target.files[0]; if(!f) return;
