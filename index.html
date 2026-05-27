@@ -1,7 +1,571 @@
-<!DOCTYPE html> <html lang="pt-BR"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>UPPT — Procedimento P-FB-10 | Petrolinked</title> <link rel="preconnect" href="https://fonts.googleapis.com"> <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"> <style> :root { --bg: #f4f3f0; --bg-card: #ffffff; --bg-hero: #0c2233; --text: #1a1a1a; --text-muted: #5a6068; --text-light: #8a9098; --teal: #0e8c9b; --teal-dark: #0a6e7a; --teal-light: #e6f5f7; --accent: #e8501e; --border: #e2e0db; --border-strong: #ccc8c0; --mono-bg: #f8f7f5; --shadow-sm: 0 1px 3px rgba(0,0,0,0.04); --shadow-md: 0 4px 20px rgba(0,0,0,0.06); --shadow-lg: 0 8px 40px rgba(0,0,0,0.08); --radius: 12px; --radius-sm: 8px; } * { margin: 0; padding: 0; box-sizing: border-box; } html { scroll-behavior: smooth; } body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }  .hero { background: var(--bg-hero); padding: 0; position: relative; overflow: hidden; } .hero::after { content: ''; position: absolute; top: 0; right: 0; width: 50%; height: 100%; background: linear-gradient(135deg, rgba(14,140,155,0.15) 0%, transparent 60%); pointer-events: none; } .hero-grid { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; } .hero-inner { max-width: 1100px; margin: 0 auto; padding: 48px 40px 52px; position: relative; z-index: 1; } .hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; } .hero-logo { height: 44px; } .hero-badge { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.5); letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.12); padding: 6px 14px; border-radius: 100px; } .hero h1 { font-size: 42px; font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 12px; } .hero h1 span { color: var(--teal); } .hero-sub { font-size: 17px; color: rgba(255,255,255,0.55); font-weight: 300; max-width: 600px; line-height: 1.6; } .hero-meta { display: flex; gap: 32px; margin-top: 32px; flex-wrap: wrap; } .hero-meta-item { display: flex; flex-direction: column; gap: 2px; } .hero-meta-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); } .hero-meta-value { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.8); }  .section-nav { background: var(--bg-card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); } .section-nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 40px; display: flex; gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; } .section-nav-inner::-webkit-scrollbar { display: none; } .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; padding: 14px 18px; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s; } .nav-link:hover { color: var(--teal); border-bottom-color: var(--teal); }  .main { max-width: 1100px; margin: 0 auto; padding: 40px 40px 80px; }  .section { margin-bottom: 48px; animation: fadeUp 0.5s ease both; } .section:nth-child(1) { animation-delay: 0.05s; } .section:nth-child(2) { animation-delay: 0.1s; } .section:nth-child(3) { animation-delay: 0.15s; } .section:nth-child(4) { animation-delay: 0.2s; } .section:nth-child(5) { animation-delay: 0.25s; } .section:nth-child(6) { animation-delay: 0.3s; } .section:nth-child(7) { animation-delay: 0.35s; } .section:nth-child(8) { animation-delay: 0.4s; } @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } } .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; } .section-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--teal); background: var(--teal-light); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; } .section-title { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow-sm); } .card p { color: var(--text-muted); line-height: 1.75; font-size: 15px; } .card p + p { margin-top: 12px; }  .diagram-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md); } .diagram-label { padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; } .diagram-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; } .diagram-label span { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light); } .diagram-img-wrap { padding: 20px; background: #fafaf8; } .diagram-img-wrap img { width: 100%; height: auto; display: block; border-radius: var(--radius-sm); }  .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; } .spec-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px 22px; display: flex; align-items: flex-start; gap: 14px; transition: border-color 0.2s; } .spec-item:hover { border-color: var(--teal); } .spec-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: var(--teal); background: var(--teal-light); padding: 3px 8px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; } .spec-label { font-size: 13px; font-weight: 500; color: var(--text-muted); } .spec-value { font-size: 15px; font-weight: 600; color: var(--text); }  .norms-list { display: flex; flex-direction: column; gap: 10px; } .norm-item { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 20px; font-size: 14px; color: var(--text-muted); transition: border-left-color 0.2s, background 0.2s; } .norm-item:hover { border-left-color: var(--accent); background: #fefefe; } .norm-item strong { color: var(--text); font-weight: 600; }  .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; } .comp-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); font-size: 14px; color: var(--text-muted); transition: all 0.2s; } .comp-item:hover { background: var(--teal-light); border-color: var(--teal); color: var(--text); } .comp-bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }  .op-steps { display: flex; flex-direction: column; gap: 14px; } .op-step { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; display: flex; gap: 18px; align-items: flex-start; transition: box-shadow 0.2s; } .op-step:hover { box-shadow: var(--shadow-md); } .op-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #fff; background: var(--teal); width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; } .op-content { flex: 1; } .op-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; } .op-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; }  .benefits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; } .benefit-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 20px; font-size: 14px; color: var(--text-muted); display: flex; align-items: flex-start; gap: 12px; line-height: 1.6; } .benefit-icon { color: var(--teal); font-size: 16px; flex-shrink: 0; margin-top: 2px; }  .approval-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; } .approval-row { display: grid; grid-template-columns: 1fr 1fr; } .approval-cell { padding: 18px 24px; text-align: center; } .approval-cell + .approval-cell { border-left: 1px solid var(--border); } .approval-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light); font-weight: 600; padding: 0 0 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px; } .approval-cell .name { font-weight: 600; font-size: 15px; color: var(--text); }  .revision-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; } .revision-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-light); font-weight: 600; padding: 10px 16px; text-align: left; background: #f8f7f5; border-bottom: 1px solid var(--border); } .revision-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }  .site-footer { max-width: 1100px; margin: 0 auto; padding: 0 40px 48px; text-align: center; } .footer-line { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 1px; padding-top: 24px; border-top: 1px solid var(--border); } .footer-line .warn { color: var(--accent); }  @media (max-width: 768px) { .hero-inner { padding: 32px 20px 36px; } .hero h1 { font-size: 28px; } .hero-top { flex-direction: column; align-items: flex-start; gap: 12px; } .section-nav-inner { padding: 0 16px; } .main { padding: 24px 16px 60px; } .specs-grid, .comp-grid, .benefits-grid { grid-template-columns: 1fr; } .card { padding: 20px; } .hero-meta { gap: 20px; } .approval-row { grid-template-columns: 1fr; } .approval-cell + .approval-cell { border-left: none; border-top: 1px solid var(--border); } .approval-label { text-align: center; } }  .img-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; cursor: zoom-out; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); } .img-modal-overlay.active { opacity: 1; visibility: visible; } .img-modal-overlay img { max-width: 94vw; max-height: 92vh; object-fit: contain; border-radius: 8px; box-shadow: 0 12px 60px rgba(0,0,0,0.5); transform: scale(0.92); transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); } .img-modal-overlay.active img { transform: scale(1); } .img-modal-close { position: fixed; top: 16px; right: 20px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000; transition: background 0.2s; line-height: 1; } .img-modal-close:hover { background: rgba(255,255,255,0.25); } .img-modal-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; } .diagram-img-wrap { cursor: zoom-in; } .approval-card-img { margin-top: 14px; width: 100%; max-width: 340px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); cursor: zoom-in; transition: transform 0.2s, box-shadow 0.2s; } .approval-card-img:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(0,0,0,0.12); } 
-/* Profile card - Elaboração */
-.profile-card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0 4px; }
-.profile-avatar { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--teal); box-shadow: 0 4px 20px rgba(14,140,155,0.2); display: block; }
-.profile-name { font-size: 15px; font-weight: 700; color: var(--text); margin: 0; }
-.profile-role { font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
-</style> </head> <body> <!-- HERO --> <header class="hero"> <div class="hero-grid"></div> <div class="hero-inner"> <div class="hero-top"> <img src="logo-petrolinked.png" alt="Petrolinked" class="hero-logo"> <div class="hero-badge">Procedimento Técnico</div> </div> <h1>Unidade de Produção de<br>Poço <span>Terrestre</span> (UPPT)</h1> <p class="hero-sub">Critérios para operação segura, controle e monitoramento do fluxo de hidrocarbonetos em unidades de superfície dos poços produtores terrestres.</p> <div class="hero-meta"> <div class="hero-meta-item"> <span class="hero-meta-label">Código</span> <span class="hero-meta-value">P –FB-10</span> </div> <div class="hero-meta-item"> <span class="hero-meta-label">Revisão</span> <span class="hero-meta-value">00</span> </div> <div class="hero-meta-item"> <span class="hero-meta-label">Emissão</span> <span class="hero-meta-value">10/05/2026</span> </div> <div class="hero-meta-item"> <span class="hero-meta-label">Páginas</span> <span class="hero-meta-value">4</span> </div> </div> </div> </header> <!-- NAV --> <nav class="section-nav"> <div class="section-nav-inner"> <a href="#objetivo" class="nav-link">Objetivo</a> <a href="#aplicacao" class="nav-link">Aplicação</a> <a href="#descricao" class="nav-link">Descrição</a> <a href="#caracteristicas" class="nav-link">Características</a> <a href="#normas" class="nav-link">Normas</a> <a href="#componentes" class="nav-link">Componentes</a> <a href="#operacao" class="nav-link">Operação</a> <a href="#beneficios" class="nav-link">Benefícios</a> </div> </nav> <!-- MAIN --> <main class="main"> <!-- 1. OBJETIVO --> <section class="section" id="objetivo"> <div class="section-header"> <div class="section-num">01</div> <h2 class="section-title">Objetivo</h2> </div> <div class="card"> <p>O Objetivo da Unidade de Produção de Poço Terrestre (UPPT) é estabelecer critérios para operação segura, controle e monitoramento do fluxo de hidrocarbonetos (petróleo e gás natural), em unidades de superfície dos poços produtores terrestres.</p> </div> <div class="diagram-card" style="margin-top: 24px;"> <div class="diagram-label"> <div class="diagram-dot"></div> <span>Diagrama Técnico — Componentes da UPPT</span> </div> <div class="diagram-img-wrap"> <img loading="lazy" src="diagrama-uppt.jpg" alt="Diagrama técnico UPPT com 14 componentes numerados"> </div> </div> </section> <!-- 2. APLICAÇÃO --> <section class="section" id="aplicacao"> <div class="section-header"> <div class="section-num">02</div> <h2 class="section-title">Aplicação</h2> </div> <div class="card"> <p>As principais aplicações da UPPT são controle de fluxo produzido, sistemas de teste de produção, monitoramento controlado da pressão do poço, isolamento do poço em condições de emergência, bancadas de treinamento e simulação.</p> </div> </section> <!-- 3. DESCRIÇÃO GERAL --> <section class="section" id="descricao"> <div class="section-header"> <div class="section-num">03</div> <h2 class="section-title">Descrição Geral</h2> </div> <div class="card"> <p>A UPPT é o conjunto modular montado sobre base (Skid) destinadas ao controle, bloqueio, monitoramento e direcionamento do fluxo de produção de poços de petróleo em sistema OnShore. Projetada para operar como interface entre a Cabeça de Poço e o sistema de escoamento, permitindo operações seguras de produção, teste e intervenção.</p> <p>Sistema projetado para operação manual, permite bloqueio duplo, adequado para ambientes onshore e condições severas.</p> </div> </section> <!-- 4. CARACTERÍSTICAS TÉCNICAS --> <section class="section" id="caracteristicas"> <div class="section-header"> <div class="section-num">04</div> <h2 class="section-title">Características Técnicas</h2> </div> <div class="specs-grid"> <div class="spec-item"> <div class="spec-id">4.1</div> <div> <div class="spec-label">Classe de pressão</div> <div class="spec-value">3000 a 5000 PSI</div> </div> </div> <div class="spec-item"> <div class="spec-id">4.2</div> <div> <div class="spec-label">Diâmetro nominal</div> <div class="spec-value">1'' a 3''</div> </div> </div> <div class="spec-item"> <div class="spec-id">4.3</div> <div> <div class="spec-label">Conexões</div> <div class="spec-value">Flangeadas e/ou roscadas, conforme normas ANSI/API</div> </div> </div> <div class="spec-item"> <div class="spec-id">4.4</div> <div> <div class="spec-label">Sistema de Vedação</div> <div class="spec-value">Metal-metal ou elastômero (Borracha nitrílica - NBR)</div> </div> </div> <div class="spec-item"> <div class="spec-id">4.5</div> <div> <div class="spec-label">Acabamento superficial</div> <div class="spec-value">Fosfatização e pintura anticorrosivo padrão industrial</div> </div> </div> <div class="spec-item"> <div class="spec-id">4.6</div> <div> <div class="spec-label">Temperatura</div> <div class="spec-value">até 120º C</div> </div> </div> </div> </section> <!-- 5. NORMAS --> <section class="section" id="normas"> <div class="section-header"> <div class="section-num">05</div> <h2 class="section-title">Normas Aplicáveis (Referência)</h2> </div> <div class="norms-list"> <div class="norm-item"><strong>API 6A</strong> — Equipamentos de Cabeça de Poço</div> <div class="norm-item"><strong>API 6D</strong> — Válvulas de linha pipeline e escoamento</div> <div class="norm-item"><strong>API 5CT</strong> — Tubos e conexões dos poços: Revestimentos, Produção e Luvas</div> <div class="norm-item"><strong>ASME B31.3</strong> — Tubulações do sistema: Tubos, tees, joelhos e conexões</div> </div> </section> <!-- 6. COMPONENTES --> <section class="section" id="componentes"> <div class="section-header"> <div class="section-num">06</div> <h2 class="section-title">Principais Componentes</h2> </div> <div class="comp-grid"> <div class="comp-item"><div class="comp-bullet"></div>Flange Adaptador</div> <div class="comp-item"><div class="comp-bullet"></div>Tee de bombeio</div> <div class="comp-item"><div class="comp-bullet"></div>Stuffing Box (Simples, duplo e duplo com centralização móvel)</div> <div class="comp-item"><div class="comp-bullet"></div>Grampo Dn 1.1/4'' x 25.000 lbs e/ou 40.000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Haste Polida Dn 1.1/4'' e/ou Dn 1.1/2''</div> <div class="comp-item"><div class="comp-bullet"></div>Luva para Haste Polida Dn 1.1/4'' e/ou Dn 1.1/2''</div> <div class="comp-item"><div class="comp-bullet"></div>Válvula Esfera Horizontal (VEH) Dn 2'' x 3000lbs</div> <div class="comp-item"><div class="comp-bullet"></div>União de Asa Dn 2'' x 6000 lbs (similar a fig 602 -Hammer)</div> <div class="comp-item"><div class="comp-bullet"></div>Valvula de Alivio de pressão Dn ½'' x 6000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Valvula Keroteste Dn ½'' x 6000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Tee de Fluxo Dn 2'' x 3000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Joelho de Fluxo Dn 2'' x 3000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Niple de condução dn 2'' LP x 3000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Niple de condução dn 1'' LP x 3000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Redução de Condução Dn 3'' LP x 2'' LP x 3000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Bull Plug Dn 2'' x 3000 lbs</div> <div class="comp-item"><div class="comp-bullet"></div>Manômetro</div> <div class="comp-item"><div class="comp-bullet"></div>Corpo de Válvula gaveta (Simulado uma Cabeça de Poço)</div> <div class="comp-item"><div class="comp-bullet"></div>Estojos e Porcas sextavadas pesadas</div> <div class="comp-item"><div class="comp-bullet"></div>Anel BX</div> <div class="comp-item"><div class="comp-bullet"></div>Estrutura Skid (Base metálica com madeira)</div> </div> </section> <!-- 7. OPERAÇÃO --> <section class="section" id="operacao"> <div class="section-header"> <div class="section-num">07</div> <h2 class="section-title">Descrição da Operação</h2> </div> <div class="op-steps"> <div class="op-step"> <div class="op-num">7.1</div> <div class="op-content"> <div class="op-title">Centro de Controle</div> <div class="op-desc">A UPPT funciona como o centro de controle do poço recebendo o fluido, regulando pressão e vazão, e direcionando a produção com segurança para o sistema de processamento ou armazenamento.</div> </div> </div> <div class="op-step"> <div class="op-num">7.2</div> <div class="op-content"> <div class="op-title">Recebimento do fluido</div> <div class="op-desc">O fluido sai do poço sob pressão e entra na UPPT pela linha principal.</div> </div> </div> <div class="op-step"> <div class="op-num">7.3</div> <div class="op-content"> <div class="op-title">Controle de Fluxo</div> <div class="op-desc">Na UPPT existem válvulas que permitem; abrir ou fechar a produção, regular a vazão, controlar a pressão.</div> </div> </div> <div class="op-step"> <div class="op-num">7.4</div> <div class="op-content"> <div class="op-title">Monitoramento</div> <div class="op-desc">O operador acompanha: a pressão, comportamento do fluxo e condições de operação.</div> </div> </div> <div class="op-step"> <div class="op-num">7.5</div> <div class="op-content"> <div class="op-title">Direcionamento</div> <div class="op-desc">O Fluido pode ser enviado para diferentes destinos: Linha de produção (operação normal), Separador (tratamento), Tanques de armazenamento, linha de teste.</div> </div> </div> <div class="op-step"> <div class="op-num">7.6</div> <div class="op-content"> <div class="op-title">Segurança</div> <div class="op-desc">A UPPT, permite: Bloquear o poço rapidamente, evitar sobrepressão, reduzir riscos de vazamento ou acidente.</div> </div> </div> </div> </section> <!-- 8. BENEFÍCIOS --> <section class="section" id="beneficios"> <div class="section-header"> <div class="section-num">08</div> <h2 class="section-title">Porque a UPPT e/ou Sobressalentes Fornecidos pela PLKD São Importantes para o Cliente</h2> </div> <div class="benefits-grid"> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Segurança Operacional</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Controle Total da Produção</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Flexibilidade em produção ou teste</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Facilidade de instalação (Sistema compacto)</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Redução de Riscos e perdas</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Sistema de Gestão de Qualidade confiável e certificado pela ISO 9001-2015</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Parceria com parceiros internacionais com o processo qualificado e certificados pelas normas API SPEC Q1, API SPEC 5CT, API SPEC 6A, API SPEC 6D, API SPEC 11B e API SPEC11 AX</div> <div class="benefit-item"><span class="benefit-icon">&#9670;</span>Tempo de resposta rápida para adequação e revisão do projeto solicitado pelo cliente e fornecimentos dos sobressalentes</div> </div> </section> <!-- APPROVAL & REVISION --> <section class="section"> <div class="approval-section"> <div class="approval-row"> <div class="approval-cell"> <div class="approval-label">Elaboração</div> <div class="profile-card"> <img src="cartao-lourenco.jpg" alt="Lourenço Carlos Loy" class="profile-avatar"> <p class="profile-name">Lourenço Carlos Loy</p> <p class="profile-role">Engenheiro de Produção</p> </div> </div> <div class="approval-cell"> <div class="approval-label">Aprovação</div> <div class="profile-card"> <img src="cartao-igor.jpg" alt="Igor Carneiro" class="profile-avatar"> <p class="profile-name">Igor Carneiro</p> <p class="profile-role">Diretor Operacional</p> </div> </div> </div> </div> <table class="revision-table" style="margin-top: 32px;"> <thead> <tr> <th>Ver. No.</th> <th>Data</th> <th>Descrição</th> </tr> </thead> <tbody> <tr> <td>00</td> <td>10/05/2026</td> <td>Emissão Inicial</td> </tr> </tbody> </table> </section> </main> <!-- FOOTER --> <footer class="site-footer"> <div class="footer-line"><span class="warn">&#9679;</span>&ensp;Cópias impressas não são controladas.</div> </footer> <!-- IMAGE MODAL --> <div class="img-modal-overlay" id="imgModal" onclick="closeModal()"> <button class="img-modal-close" onclick="closeModal()" aria-label="Fechar">&#10005;</button> <img loading="lazy" id="modalImg" src="" alt="Diagrama UPPT ampliado"> <div class="img-modal-hint">Clique para fechar · ESC</div> </div> <script> const modal = document.getElementById('imgModal'); const modalImg = document.getElementById('modalImg'); document.querySelector('.diagram-img-wrap').addEventListener('click', function() { const src = this.querySelector('img').src; modalImg.src = src; modal.classList.add('active'); document.body.style.overflow = 'hidden'; }); function closeModal() { modal.classList.remove('active'); document.body.style.overflow = ''; } function openCardModal(imgEl) { modalImg.src = imgEl.src; modal.classList.add('active'); document.body.style.overflow = 'hidden'; } document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); }); </script> </body> </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Procedimento técnico P-FB-10 - Unidade de Produção de Poço Terrestre (UPPT) da Petrolinked. Critérios para operação segura e monitoramento de fluxo de hidrocarbonetos.">
+  <meta name="keywords" content="UPPT, poço terrestre, produção, petróleo, procedimento técnico, Petrolinked">
+  <meta name="author" content="Petrolinked">
+  <meta name="theme-color" content="#0c2233">
+
+  <title>UPPT — Procedimento P-FB-10 | Petrolinked</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- ====== HEADER / HERO SECTION ====== -->
+  <!-- Seção hero com título principal, logo e metadados -->
+  <header class="hero">
+    <!-- Grid decorativo no fundo do hero -->
+    <div class="hero-grid"></div>
+
+    <!-- Container interno do hero com conteúdo principal -->
+    <div class="hero-inner">
+      <div class="hero-top">
+        <img src="img/logo-petrolinked.png" alt="Petrolinked" class="hero-logo">
+        <div class="hero-badge">Procedimento Técnico</div>
+      </div>
+
+      <h1>
+        Unidade de Produção de<br>Poço <span>Terrestre</span> (UPPT)
+      </h1>
+
+      <p class="hero-sub">
+        Critérios para operação segura, controle e monitoramento do fluxo de hidrocarbonetos em unidades de superfície dos poços produtores terrestres.
+      </p>
+
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Código</span>
+          <span class="hero-meta-value">P –FB-10</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Revisão</span>
+          <span class="hero-meta-value">01</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Emissão</span>
+          <span class="hero-meta-value">10/05/2026</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Páginas</span>
+          <span class="hero-meta-value">9</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== NAVIGATION BAR ====== -->
+  <!-- Barra de navegação fixa com links para cada seção -->
+  <nav class="section-nav" aria-label="Navegação do documento">
+    <!-- Container com scroll horizontal dos links -->
+    <div class="section-nav-inner">
+      <a href="#objetivo" class="nav-link">Objetivo</a>
+      <a href="#aplicacao" class="nav-link">Aplicação</a>
+      <a href="#descricao" class="nav-link">Descrição</a>
+      <a href="#caracteristicas" class="nav-link">Características</a>
+      <a href="#normas" class="nav-link">Normas</a>
+      <a href="#operacao" class="nav-link">Operação</a>
+      <a href="#manutencao" class="nav-link">Manutenção</a>
+      <a href="#beneficios" class="nav-link">Benefícios</a>
+      <a href="#certificacoes" class="nav-link">Certificações</a>
+    </div>
+  </nav>
+
+  <!-- ====== MAIN CONTENT ====== -->
+  <!-- Container principal com todas as seções de conteúdo -->
+  <main class="main">
+    <!-- ====== SEÇÃO 01: OBJETIVO ====== -->
+    <!-- Define o objetivo geral do procedimento técnico -->
+    <section class="section" id="objetivo">
+      <div class="section-header">
+        <div class="section-num">01</div>
+        <h2 class="section-title">Objetivo</h2>
+      </div>
+
+      <div class="card">
+        <p>
+          O Objetivo da Unidade de Produção de Poço Terrestre (UPPT) é estabelecer critérios para operação segura, controle e monitoramento do fluxo de hidrocarbonetos (petróleo e gás natural), em unidades de superfície dos poços produtores terrestres.
+        </p>
+      </div>
+
+      <div class="diagram-card" style="margin-top: 24px;">
+        <div class="diagram-label">
+          <div class="diagram-dot"></div>
+          <span>Diagrama Técnico — Componentes da UPPT</span>
+        </div>
+        <div class="diagram-img-wrap">
+          <img loading="lazy" src="img/diagrama-uppt.png" alt="Diagrama técnico UPPT com 14 componentes numerados">
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 02: APLICAÇÃO ====== -->
+    <!-- Descreve o escopo e aplicação do procedimento -->
+    <section class="section" id="aplicacao">
+      <div class="section-header">
+        <div class="section-num">02</div>
+        <h2 class="section-title">Aplicação</h2>
+      </div>
+
+      <div class="card">
+        <p>
+          As principais aplicações da UPPT são:
+        </p>
+        <ul style="padding-left: 20px; margin-top: 12px; color: var(--text-muted);">
+          <li>Controle de fluxo produzido</li>
+          <li>Sistemas de teste de produção</li>
+          <li>Monitoramento controlado da pressão do poço</li>
+          <li>Isolamento do poço em condições de emergência</li>
+          <li>Bancadas de treinamento e simulação</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 03: DESCRIÇÃO GERAL ====== -->
+    <!-- Descreve em detalhes a Unidade de Produção de Poço Terrestre -->
+    <section class="section" id="descricao">
+      <div class="section-header">
+        <div class="section-num">03</div>
+        <h2 class="section-title">Descrição Geral</h2>
+      </div>
+
+      <div class="card">
+        <p>
+          A UPPT é o conjunto modular montado sobre base (Skid) destinadas ao controle, bloqueio, monitoramento e direcionamento do fluxo de produção de poços de petróleo em sistema OnShore. Projetada para operar como interface entre a Cabeça de Poço e o sistema de escoamento, permitindo operações seguras de produção, teste e intervenção.
+        </p>
+        <p>
+          Sistema projetado para operação manual, permite bloqueio duplo, adequado para ambientes onshore e condições severas.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 04: CARACTERÍSTICAS TÉCNICAS ====== -->
+    <!-- Lista especificações técnicas e propriedades do equipamento -->
+    <section class="section" id="caracteristicas">
+      <div class="section-header">
+        <div class="section-num">04</div>
+        <h2 class="section-title">Características Técnicas</h2>
+      </div>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-id">4.1</div>
+          <div>
+            <div class="spec-label">Classe de pressão</div>
+            <div class="spec-value">3000 a 5000 PSI</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.2</div>
+          <div>
+            <div class="spec-label">Diâmetro nominal</div>
+            <div class="spec-value">1″ a 3″</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.3</div>
+          <div>
+            <div class="spec-label">Conexões</div>
+            <div class="spec-value">Flangeadas e/ou roscadas, conforme normas ANSI/API</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.4</div>
+          <div>
+            <div class="spec-label">Sistema de Vedação</div>
+            <div class="spec-value">Metal-metal ou elastômero (NBR)</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.5</div>
+          <div>
+            <div class="spec-label">Acabamento superficial</div>
+            <div class="spec-value">Fosfatização e pintura anticorrosivo</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.6</div>
+          <div>
+            <div class="spec-label">Temperatura operacional</div>
+            <div class="spec-value">Até 120° C</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.7</div>
+          <div>
+            <div class="spec-label">Material principal</div>
+            <div class="spec-value">Aço carbono ASTM A105</div>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <div class="spec-id">4.8</div>
+          <div>
+            <div class="spec-label">Peso (aproximado)</div>
+            <div class="spec-value">2.500 a 3.500 kg</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 05: NORMAS APLICÁVEIS ====== -->
+    <!-- Referencia normas técnicas e padrões aplicáveis -->
+    <section class="section" id="normas">
+      <div class="section-header">
+        <div class="section-num">05</div>
+        <h2 class="section-title">Normas Aplicáveis (Referência)</h2>
+      </div>
+
+      <div class="norms-list">
+        <div class="norm-item">
+          <strong>API 6A</strong> — Equipamentos de Cabeça de Poço e de Superfície
+        </div>
+        <div class="norm-item">
+          <strong>API 6D</strong> — Válvulas de linha pipeline e escoamento
+        </div>
+        <div class="norm-item">
+          <strong>API 5CT</strong> — Tubos e conexões dos poços: Revestimentos, Produção e Luvas
+        </div>
+        <div class="norm-item">
+          <strong>ASME B31.3</strong> — Tubulações do sistema: Tubos, tees, joelhos e conexões
+        </div>
+        <div class="norm-item">
+          <strong>ISO 9001:2015</strong> — Sistemas de Gestão da Qualidade
+        </div>
+        <div class="norm-item">
+          <strong>API SPEC Q1</strong> — Especificações de Qualidade para equipamentos de óleo e gás
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 07: DESCRIÇÃO DA OPERAÇÃO ====== -->
+    <!-- Passos e procedimentos para operação segura do equipamento -->
+    <section class="section" id="operacao">
+      <div class="section-header">
+        <div class="section-num">07</div>
+        <h2 class="section-title">Descrição da Operação</h2>
+      </div>
+
+      <div class="op-steps">
+        <div class="op-step">
+          <div class="op-num">7.1</div>
+          <div class="op-content">
+            <div class="op-title">Centro de Controle</div>
+            <div class="op-desc">
+              A UPPT funciona como o centro de controle do poço recebendo o fluido, regulando pressão e vazão, e direcionando a produção com segurança para o sistema de processamento ou armazenamento.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">7.2</div>
+          <div class="op-content">
+            <div class="op-title">Recebimento do fluido</div>
+            <div class="op-desc">
+              O fluido sai do poço sob pressão e entra na UPPT pela linha principal de entrada.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">7.3</div>
+          <div class="op-content">
+            <div class="op-title">Controle de Fluxo</div>
+            <div class="op-desc">
+              Na UPPT existem válvulas que permitem: abrir ou fechar a produção, regular a vazão, controlar a pressão e isolar seções.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">7.4</div>
+          <div class="op-content">
+            <div class="op-title">Monitoramento</div>
+            <div class="op-desc">
+              O operador acompanha continuamente: a pressão do sistema, comportamento do fluxo e condições gerais de operação.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">7.5</div>
+          <div class="op-content">
+            <div class="op-title">Direcionamento</div>
+            <div class="op-desc">
+              O fluido pode ser enviado para diferentes destinos: Linha de produção (operação normal), Separador (tratamento), Tanques de armazenamento ou linha de teste.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">7.6</div>
+          <div class="op-content">
+            <div class="op-title">Segurança</div>
+            <div class="op-desc">
+              A UPPT permite: Bloquear o poço rapidamente em emergências, evitar sobrepressão, reduzir riscos de vazamento ou acidente.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 08: MANUTENÇÃO E INSPEÇÃO ====== -->
+    <!-- Procedimentos de manutenção preventiva e inspeção periódica -->
+    <section class="section" id="manutencao">
+      <div class="section-header">
+        <div class="section-num">08</div>
+        <h2 class="section-title">Manutenção e Inspeção</h2>
+      </div>
+
+      <div class="card">
+        <p style="font-weight: 600; color: var(--text); margin-bottom: 12px;">
+          Procedimentos recomendados de manutenção preventiva:
+        </p>
+      </div>
+
+      <div class="op-steps">
+        <div class="op-step">
+          <div class="op-num">8.1</div>
+          <div class="op-content">
+            <div class="op-title">Inspeção Visual</div>
+            <div class="op-desc">
+              Realizar inspeção visual semanal da UPPT, verificando vazamentos, corrosão, deformações e integridade estrutural.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">8.2</div>
+          <div class="op-content">
+            <div class="op-title">Teste de Pressão</div>
+            <div class="op-desc">
+              Executar teste hidrostático trimestral a 1.5x a pressão de trabalho máxima para validar integridade dos selantes.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">8.3</div>
+          <div class="op-content">
+            <div class="op-title">Lubrificação</div>
+            <div class="op-desc">
+              Lubrificar válvulas, gavetas e hastes polidas mensalmente com óleo mineral ISO VG 32, evitando ressecamento.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">8.4</div>
+          <div class="op-content">
+            <div class="op-title">Substituição de Vedações</div>
+            <div class="op-desc">
+              Substituir anéis de vedação (O-rings) e gaxetas a cada 2 anos ou quando necessário, conforme inspeção visual.
+            </div>
+          </div>
+        </div>
+
+        <div class="op-step">
+          <div class="op-num">8.5</div>
+          <div class="op-content">
+            <div class="op-title">Calibração de Medidores</div>
+            <div class="op-desc">
+              Calibrar manômetros e indicadores de pressão anualmente com padrões certificados.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 09: BENEFÍCIOS ====== -->
+    <!-- Lista os principais benefícios e vantagens do procedimento -->
+    <section class="section" id="beneficios">
+      <div class="section-header">
+        <div class="section-num">09</div>
+        <h2 class="section-title">Benefícios da UPPT Fornecida pela PLKD</h2>
+      </div>
+
+      <div class="benefits-grid">
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Segurança Operacional garantida</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Controle Total da Produção</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Flexibilidade em produção ou teste</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Facilidade de instalação (Sistema compacto)</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Redução de Riscos operacionais</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Gestão de Qualidade ISO 9001:2015</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Certificações internacionais API</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Suporte técnico especializado 24/7</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Tempo de resposta rápido</div>
+        <div class="benefit-item"><span class="benefit-icon">◆</span>Peças sobressalentes disponíveis</div>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 10: CERTIFICAÇÕES E CONFORMIDADES ====== -->
+    <!-- Certificações e padrões de conformidade do procedimento -->
+    <section class="section" id="certificacoes">
+      <div class="section-header">
+        <div class="section-num">10</div>
+        <h2 class="section-title">Certificações e Conformidades</h2>
+      </div>
+
+      <div class="norms-list">
+        <div class="norm-item">
+          <strong>ISO 9001:2015</strong> — Sistema de Gestão da Qualidade certificado
+        </div>
+        <div class="norm-item">
+          <strong>API SPEC Q1</strong> — Qualidade para equipamentos de óleo e gás
+        </div>
+        <div class="norm-item">
+          <strong>API SPEC 5CT</strong> — Tubos e conexões de poços
+        </div>
+        <div class="norm-item">
+          <strong>API SPEC 6A</strong> — Equipamentos de Cabeça de Poço
+        </div>
+        <div class="norm-item">
+          <strong>API SPEC 6D</strong> — Válvulas de pipeline
+        </div>
+        <div class="norm-item">
+          <strong>API SPEC 11B</strong> — Bombas de varetas
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <p>
+          A PLKD mantém parcerias com fornecedores internacionais qualificados e certificados, garantindo conformidade com os mais altos padrões de segurança, qualidade e desempenho operacional.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====== SEÇÃO 11: APPROVAL & REVISION ====== -->
+    <!-- Seção de aprovações por departamento e tabela de revisões -->
+    <section class="section">
+      <!-- Header da seção de aprovações -->
+      <div class="section-header">
+        <div class="section-num">11</div>
+        <h2 class="section-title">Aprovação e Revisão</h2>
+      </div>
+
+      <!-- Container de aprovações com células por departamento -->
+      <div class="approval-section">
+        <!-- Grid vertical com departamentos -->
+        <div class="approval-row">
+          <!-- Célula Comercial -->
+          <div class="approval-cell">
+            <div class="approval-label">Comercial</div>
+            <div class="profile-card">
+              <img src="img/cartao-lourenco.jpg" alt="Lucas" class="profile-avatar">
+              <p class="profile-name">Lucas</p>
+              <p class="profile-role">Engenheiro de Produção</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/cartao-lourenco.jpg" alt="Jose Luiz" class="profile-avatar">
+              <p class="profile-name">Jose Luiz</p>
+              <p class="profile-role">Engenheiro de Produção</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/LuizAntonio.jpeg" alt="Luiz Antonio" class="profile-avatar">
+              <p class="profile-name">Luiz Antonio</p>
+              <p class="profile-role">Engenheiro de Produção</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/Naiane.png" alt="Naiane Andrade" class="profile-avatar">
+              <p class="profile-name">Naiane Andrade</p>
+              <p class="profile-role">Gestão Comercial</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/David.jpeg" alt="David Ribeiro" class="profile-avatar">
+              <p class="profile-name">David Ribeiro</p>
+              <p class="profile-role">Coordenador Comercial</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/cartao-lourenco.jpg" alt="Luiz Angelo" class="profile-avatar">
+              <p class="profile-name">Luiz Angelo</p>
+              <p class="profile-role">Gestão Comercial</p>
+            </div>
+          </div>
+          <!-- Célula Administrativo Financeiro -->
+          <div class="approval-cell">
+            <div class="approval-label">Administrativo Financeiro</div>
+            <div class="profile-card">
+              <img src="img/Igor.jpg" alt="Igor Carneiro" class="profile-avatar">
+              <p class="profile-name">Igor Carneiro</p>
+              <p class="profile-role">Diretor Financeiro</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/Amaral.jpeg" alt="Amaral" class="profile-avatar">
+              <p class="profile-name">Hennessy Amaral</p>
+              <p class="profile-role">Administrativo e Financeiro</p>
+            </div>
+          </div>
+          <!-- Célula Engenharia - Qualidade -->
+          <div class="approval-cell">
+            <div class="approval-label">Engenharia - Qualidade</div>
+            <div class="profile-card">
+              <img src="img/Lourenco.jpg" alt="Lourenço Carlos Loy" class="profile-avatar">
+              <p class="profile-name">Lourenço Carlos Loy</p>
+              <p class="profile-role">Engenheiro de Produto</p>
+            </div>
+            <div class="profile-card">
+              <img src="img/larissa.jpeg" alt="Larissa Oliveira" class="profile-avatar">
+              <p class="profile-name">Larissa Oliveira</p>
+              <p class="profile-role">Gestão de Qualidade</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de histórico de revisões -->
+      <table class="revision-table">
+        <!-- Cabeçalho da tabela -->
+        <thead>
+          <tr>
+            <th>Versão</th>
+            <th>Data</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>00</td>
+            <td>10/05/2026</td>
+            <td>Emissão Inicial</td>
+          </tr>
+          <tr>
+            <td>01</td>
+            <td>26/05/2026</td>
+            <td>Revisão: Seções de manutenção e certificações expandidas</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- ====== FOOTER ====== -->
+  <!-- Rodapé do site com informações finais -->
+  <footer class="site-footer">
+    <div class="footer-line">
+      <span class="warn">●</span>&ensp;Cópias impressas não são controladas. Consulte a versão digital oficial.
+    </div>
+  </footer>
+
+  <!-- IMAGE MODAL -->
+  <div class="img-modal-overlay" id="imgModal">
+    <button class="img-modal-close" aria-label="Fechar modal">✕</button>
+    <img id="modalImg" src="" alt="Diagrama UPPT ampliado" loading="lazy">
+    <div class="img-modal-hint">Clique para fechar · ESC</div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script src="script.js" defer></script>
+</body>
+</html>
